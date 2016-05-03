@@ -16,6 +16,12 @@ class TestPageNameParsing(unittest.TestCase):
         result = msutils.parse_page_name(filename)
         self.assertEqual(expected, result)
 
+    def test_clearly_invalid_filename(self):
+        """parse_page_name should raise ValueError with invalid filename"""
+        filename = 'not a filename'
+        with self.assertRaises(ValueError):
+            msutils.parse_page_name(filename)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -22,8 +22,10 @@ def parse_page_name(name):
         _
         (?P<date> \d{6} )
     ''', flags=re.VERBOSE)
-    match = page_name_regex.match(name)
-    groups = match.groupdict()
+    try:
+        groups = page_name_regex.match(name).groupdict()
+    except AttributeError:
+        raise ValueError('{0} is not a valid filename'.format(name))
 
     pages = [groups['first_page']]
     if groups['second_page'] is not None:
