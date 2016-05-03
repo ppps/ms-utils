@@ -19,7 +19,13 @@ class TestPageNameParsing(unittest.TestCase):
     def test_clearly_invalid_filename(self):
         """parse_page_name should raise ValueError with invalid filename"""
         filename = 'not a filename'
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, 'not a valid filename'):
+            msutils.parse_page_name(filename)
+
+    def test_too_many_numbers_in_date(self):
+        """Raise ValueError if date is not 6 numbers long"""
+        filename = '1_Front_0400516.indd'
+        with self.assertRaisesRegex(ValueError, 'not a valid filename'):
             msutils.parse_page_name(filename)
 
 

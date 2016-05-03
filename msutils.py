@@ -21,6 +21,7 @@ def parse_page_name(name):
         (?P<section> [^_]+ )
         _
         (?P<date> \d{6} )
+        \.
     ''', flags=re.VERBOSE)
     try:
         groups = page_name_regex.match(name).groupdict()
