@@ -1,3 +1,7 @@
+from datetime import datetime
+import re
+
+
 def parse_page_name(name):
     """Extra page, section and date from a filename
 
@@ -8,4 +12,26 @@ def parse_page_name(name):
             'date': datetime object
         }
     """
-    pass
+    page_name_regex = re.compile('''\
+        ^
+        (?P<first_page>  \d+)
+        -?
+        (?P<second_page> \d+)?
+        _
+        (?P<section> [^_]+ )
+        _
+        (?P<date> \d{6} )
+    ''', flags=re.VERBOSE)
+    match = page_name_regex.match(name)
+    groups = match.groupdict()
+
+    pages = [groups['first_page']]
+    if groups['second_page'] is not None:
+        pages.append(groups['second_page'])
+    pages = tuple(map(int, pages))
+
+    date = datetime.strptime(groups['date'], '%d%m%y')
+
+    return {'pages': pages,
+            'section': groups['section'],
+            'date': date}
