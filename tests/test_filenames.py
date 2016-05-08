@@ -46,6 +46,15 @@ class TestPageNameParsing(unittest.TestCase):
         result = msutils.parse_page_name(filename)
         self.assertEqual(expected, result)
 
+    def test_space_as_separator(self):
+        """Correctly parse filename with space as separator"""
+        filename = '14-15 Features 150314.indd'
+        expected = {'pages': (14, 15),
+                    'section': 'Features',
+                    'date': datetime(2014, 3, 15)}
+        result = msutils.parse_page_name(filename)
+        self.assertEqual(expected, result)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
