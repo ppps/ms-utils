@@ -29,7 +29,7 @@ class TestPageNameParsing(unittest.TestCase):
             msutils.parse_page_name(filename)
 
     def test_extra_underscore_in_section(self):
-        """correctly parse filename with underscore in section"""
+        """Correctly parse filename with underscore in section"""
         filename = '4-5_advert_Home_280414.indd'
         expected = {'pages': (4, 5),
                     'section': 'advert_Home',
@@ -81,7 +81,6 @@ class TestPageNameParsing(unittest.TestCase):
         for fn in filenames:
             with self.assertRaisesRegex(ValueError, 'not a valid filename'):
                 msutils.parse_page_name(fn)
-
 
 
 if __name__ == '__main__':
