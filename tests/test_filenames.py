@@ -55,6 +55,15 @@ class TestPageNameParsing(unittest.TestCase):
         result = msutils.parse_page_name(filename)
         self.assertEqual(expected, result)
 
+    def test_multiple_separator_chars(self):
+        """Extra separator chars are excluded from section name"""
+        filename = '11_Arts_ 231214.indd'
+        expected = {'pages': (11,),
+                    'section': 'Arts',
+                    'date': datetime(2014, 12, 23)}
+        result = msutils.parse_page_name(filename)
+        self.assertEqual(expected, result)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -17,9 +17,9 @@ def parse_page_name(name):
         (?P<first_page>  \d+)
         -?
         (?P<second_page> \d+)?
-        [-_ ]
-        (?P<section> .+ )
-        [-_ ]
+        [-_ ]+
+        (?P<section> .+? )
+        [-_ ]+
         (?P<date> \d{6} )
         \.
     ''', flags=re.VERBOSE)
