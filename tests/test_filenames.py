@@ -64,6 +64,25 @@ class TestPageNameParsing(unittest.TestCase):
         result = msutils.parse_page_name(filename)
         self.assertEqual(expected, result)
 
+    def test_known_invalid_no_date(self):
+        """Filenames with no date raise ValueError"""
+        filenames = ['14-15 Features.indd',
+                     '17_Shares ad.indd']
+        for fn in filenames:
+            with self.assertRaisesRegex(ValueError, 'not a valid filename'):
+                msutils.parse_page_name(fn)
+
+    def test_known_invalid_5digit_date(self):
+        """Filenames with ambiguous 5-digit date raise ValueError"""
+        filenames = ['11_Arts_26314.indd',
+                     '16-17_Arts_14115.indd',
+                     '16-17_Arts_21115.indd',
+                     '16-17_Arts_28115.indd']
+        for fn in filenames:
+            with self.assertRaisesRegex(ValueError, 'not a valid filename'):
+                msutils.parse_page_name(fn)
+
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
