@@ -37,5 +37,15 @@ class TestPageNameParsing(unittest.TestCase):
         result = msutils.parse_page_name(filename)
         self.assertEqual(expected, result)
 
+    def test_hyphen_as_separator(self):
+        """Correctly parse filename with hyphen as separator"""
+        filename = '10-11-FEATURES-251014.indd'
+        expected = {'pages': (10, 11),
+                    'section': 'FEATURES',
+                    'date': datetime(2014, 10, 25)}
+        result = msutils.parse_page_name(filename)
+        self.assertEqual(expected, result)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
