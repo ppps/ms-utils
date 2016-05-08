@@ -1,0 +1,61 @@
+^(\d+)[-_ ]?(\d+)?[-_ ]+(.+)[-_ ]+(\d{6})\.\w+$
+
+# No date
+14-15 Features.indd
+17_Shares ad.indd
+
+
+# 5-digit date
+11_Arts_26314.indd
+16-17_Arts_14115.indd
+16-17_Arts_21115.indd
+16-17_Arts_28115.indd
+
+
+# Space instead of underscore
+10-11 Arts_250416.indd
+12-13 Features_010314.indd
+14-15 Features_150314.indd
+14-15 Features_080314.indd
+16-17 Features_150314.indd
+
+
+# Space instead of underscore (before date)
+11_Arts_ 231214.indd
+24-25_Arts 300416.indd
+
+
+# Hyphen instead of underscore
+10-11-FEATURES_251014.indd
+
+
+# Extra underscore in section
+1_REAL_Front_240414.indd
+4-5_advert_Home_280414.indd
+4-5_Home_Advert_020114.indd
+4-5_Advert_Home_120714.indd
+4-5_advert_Home_300614.indd
+4-5_advert_Home_090614.indd
+4-5_Advert_Home_210614.indd
+4-5_advert_Home_260614.indd
+4-5_Advert_Home_010314.indd
+6-7_Ad_Home_150416.indd
+6-7_advert_Home_280414.indd
+6-7_Advert_home_020114.indd
+6-7_Home_Advert_120714.indd
+6-7_Home_advert_300614.indd
+6-7_advert_Home_090614.indd
+6-7_Home_Advert_210614.indd
+6-7_Home_Advert_260614.indd
+12-13_REAL_TV_280115.indd
+10_Shares_ad_311214.indd
+20-21_TV_Feats_181014.indd
+22_E_Edition_ad_200615.indd
+22-23_Feats_Paddy_181014.indd
+24-25_Ents-Arts_REAL_181014.indd
+
+
+# Pages separated by undescore
+8_9_Struggle_251014.indd
+10_11_Struggle_181014.indd
+20_21_Struggle_120714.indd
