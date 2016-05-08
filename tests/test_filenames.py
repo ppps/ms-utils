@@ -28,6 +28,14 @@ class TestPageNameParsing(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'not a valid filename'):
             msutils.parse_page_name(filename)
 
+    def test_extra_underscore_in_section(self):
+        """correctly parse filename with underscore in section"""
+        filename = '4-5_advert_Home_280414.indd'
+        expected = {'pages': (4, 5),
+                    'section': 'advert_Home',
+                    'date': datetime(2014, 4, 28)}
+        result = msutils.parse_page_name(filename)
+        self.assertEqual(expected, result)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
