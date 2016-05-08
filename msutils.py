@@ -3,7 +3,7 @@ import re
 
 
 def parse_page_name(name):
-    """Extra page, section and date from a filename
+    """Extract page, section and date from a filename
 
     Returns a dict of the form:
         {
