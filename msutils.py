@@ -83,6 +83,5 @@ class Page(object):
 
         self.date = datetime.strptime(regex_match['date'],
                                        self._page_date_format)
-
         self.section = regex_match['section']
-
+        self.type = regex_match['type'].lower()
