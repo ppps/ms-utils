@@ -81,7 +81,8 @@ class Page(object):
         self.pages = tuple(map(int, pages))
 
 
-        self._date = datetime.strptime(regex_match['date'],
+        self.date = datetime.strptime(regex_match['date'],
                                        self._page_date_format)
 
-        self._section = regex_match['section']
+        self.section = regex_match['section']
+
