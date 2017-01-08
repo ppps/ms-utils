@@ -104,6 +104,12 @@ class TestPageMisc(unittest.TestCase):
         result = msutils.Page(p)
         self.assertEqual(p, result.path)
 
+    def test_path_user_expanded(self):
+        """Page expands ~ in supplied path"""
+        p = Path('~/fake/pages/dir/1_Front_040516.indd')
+        result = msutils.Page(p)
+        self.assertEqual(p.expanduser(), result.path)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
