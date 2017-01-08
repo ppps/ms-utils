@@ -39,6 +39,8 @@ class Page(object):
             raise ValueError(
                 '{0} is an invalid filename'.format(page_path.name))
 
+        self.path = page_path
+
         pages = [regex_match['first_page']]
         if regex_match['second_page'] is not None:
             pages.append(regex_match['second_page'])

@@ -89,5 +89,21 @@ class TestPageNameParsing(unittest.TestCase):
                 msutils.Page(Path(fn))
 
 
+class TestPageMisc(unittest.TestCase):
+    """Test non-page-parsing aspects of Page"""
+
+    def test_path_stored_name_only(self):
+        """Page correctly stores a name-only path"""
+        p = Path('1_Front_040516.indd')
+        result = msutils.Page(p)
+        self.assertEqual(p, result.path)
+
+    def test_path_stored_full_path(self):
+        """Page correctly stores full path supplied in constructor"""
+        p = Path('/fake/but/full/path/1_Front_040516.indd')
+        result = msutils.Page(p)
+        self.assertEqual(p, result.path)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
