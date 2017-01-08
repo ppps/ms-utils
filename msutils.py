@@ -53,6 +53,15 @@ class Page(object):
         self.section = regex_match['section']
         self.type = regex_match['type'].lower()
 
+    def __str__(self):
+        """Return the name of the underlying file"""
+        return self.path.name
+
+    def __repr__(self):
+        """Return string Page(Path(…))"""
+        return '{0}({1})'.format(self.__class__.__name__,
+                                 repr(self.path))
+
     def external_name(self):
         """Returns string used outside the Star to identify the page
 

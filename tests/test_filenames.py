@@ -125,6 +125,21 @@ class TestPageMisc(unittest.TestCase):
         page = msutils.Page(Path('1_Front_040516.INDD'))
         self.assertEqual('indd', page.type)
 
+    def test_str(self):
+        """Page returns original filename for __str__"""
+        orig_path = Path('1_Front_040516.indd')
+        page = msutils.Page(orig_path)
+        self.assertEqual(orig_path.name, str(page))
+
+    def test_repr(self):
+        """Page returns 'Page(page.path)' for __repr__"""
+        orig_path = Path('/test/path/1_Front_040516.indd')
+        page = msutils.Page(orig_path)
+        self.assertEqual(
+            'Page({})'.format(repr(orig_path)),
+            repr(page)
+            )
+
 
 class TestPageExternalName(unittest.TestCase):
     """Test Page.external_name method
