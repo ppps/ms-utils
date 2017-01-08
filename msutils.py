@@ -44,8 +44,7 @@ class Page(object):
             pages.append(regex_match['second_page'])
         self.pages = tuple(map(int, pages))
 
-
         self.date = datetime.strptime(regex_match['date'],
-                                       self._page_date_format)
+                                      self._page_date_format)
         self.section = regex_match['section']
         self.type = regex_match['type'].lower()
