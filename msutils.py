@@ -25,6 +25,8 @@ class Page(object):
 
     _page_date_format = '%d%m%y'
 
+    _external_template = 'MS_{date:%Y}_{date:%m}_{date:%d}_{page:03}.{type}'
+
     def __init__(self, page_path: Path):
         """Set up Page from a path to a file on disk
 
@@ -50,3 +52,19 @@ class Page(object):
                                       self._page_date_format)
         self.section = regex_match['section']
         self.type = regex_match['type'].lower()
+
+    def external_name(self):
+        """Returns string used outside the Star to identify the page
+
+        Raises ValueError if called on instances representing a file
+        representing more than a single page.
+        """
+        if len(self.pages) > 1:
+            raise ValueError(
+                'external_name is invalid for Page instances that represent'
+                'multiple pages'
+                )
+        return self._external_template.format(
+            date=self.date,
+            page=self.pages[0],
+            type=self.type)

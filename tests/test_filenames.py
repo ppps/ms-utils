@@ -126,5 +126,46 @@ class TestPageMisc(unittest.TestCase):
         self.assertEqual('indd', page.type)
 
 
+class TestPageExternalName(unittest.TestCase):
+    """Test Page.external_name method
+
+    Returns a string suitable for use by external partners. These names
+    omit the section and are formatted such that they sort by date when
+    listed alphabetically.
+
+    It should only be used for single-page files and raises a ValueError
+    if used called on a Page object representing a file that contains
+    more than a single page.
+
+    Our canonical (as of the start of 2017) external name format for
+    single pages is:
+        MS_2017_01_31_000
+
+    .external_name should format Pages to this scheme and include the
+    Page's type. This function is typically used for PDF files but the
+    function should not assume it.
+    """
+
+    def test_basic_case_indd(self):
+        """external_name formats a known correct InDesign page"""
+        page = msutils.Page(Path('1_Front_040516.indd'))
+        expected = 'MS_2016_05_04_001.indd'
+        self.assertEqual(page.external_name(),
+                         expected)
+
+    def test_basic_case_pdf(self):
+        """external_name formats a known correct InDesign page"""
+        page = msutils.Page(Path('1_Front_040516.pdf'))
+        expected = 'MS_2016_05_04_001.pdf'
+        self.assertEqual(page.external_name(),
+                         expected)
+
+    def test_multiple_pages_raises(self):
+        """external_name raises ValueError for non-single pages"""
+        page = msutils.Page(Path('2-3_Home_040516.indd'))
+        with self.assertRaisesRegex(ValueError, 'multiple pages'):
+            page.external_name()
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
