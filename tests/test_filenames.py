@@ -110,6 +110,21 @@ class TestPageMisc(unittest.TestCase):
         result = msutils.Page(p)
         self.assertEqual(p.expanduser(), result.path)
 
+    def test_type_stored_indd(self):
+        """Page correctly stores 'indd' under .type"""
+        page = msutils.Page(Path('1_Front_040516.indd'))
+        self.assertEqual('indd', page.type)
+
+    def test_type_stored_pdf(self):
+        """Page correctly stores 'indd' under .type"""
+        page = msutils.Page(Path('1_Front_040516.pdf'))
+        self.assertEqual('pdf', page.type)
+
+    def test_type_stored_lower(self):
+        """Page correctly lowercases the file's type"""
+        page = msutils.Page(Path('1_Front_040516.INDD'))
+        self.assertEqual('indd', page.type)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
