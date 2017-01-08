@@ -73,7 +73,8 @@ class Page(object):
         """
         regex_match = self._page_name_regex.match(page_path.name)
         if not regex_match:
-            raise ValueError('Page does not have a valid name')
+            raise ValueError(
+                '{0} is an invalid filename'.format(page_path.name))
 
         pages = [regex_match['first_page']]
         if regex_match['second_page'] is not None:
