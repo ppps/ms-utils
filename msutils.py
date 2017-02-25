@@ -38,8 +38,7 @@ class Page(object):
         """
         regex_match = self._page_name_regex.match(page_path.name)
         if not regex_match:
-            raise ValueError(
-                '{0} is an invalid filename'.format(page_path.name))
+            raise ValueError(f'{page_path.name} is an invalid filename')
 
         self.path = page_path.expanduser()
 
