@@ -16,7 +16,7 @@ class Page(object):
         (?P<second_page> \d+)
     )?
     [-_ ]*
-    (?P<section> .+? )
+    (?P<section> \D+? )
     [-_ ]*
     (?P<date> \d{6} )
     \.
