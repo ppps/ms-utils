@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 import unittest
 
-from hypothesis import given
+from hypothesis import given, example
 import hypothesis.strategies as st
 
 import msutils
@@ -145,6 +145,11 @@ class TestPageMisc(unittest.TestCase):
         page = msutils.Page(Path('1_Front_040516.INDD'))
         self.assertEqual('indd', page.type)
 
+    def test_prefix_stored(self):
+        """Page stores any prefix in the filename"""
+        page = msutils.Page(Path('W4_Back_240314.indd'))
+        self.assertEqual(page.prefix, 'W')
+
     def test_str(self):
         """Page returns original filename for __str__"""
         orig_path = Path('1_Front_040516.indd')
@@ -205,6 +210,7 @@ class TestPageExternalName(unittest.TestCase):
 class TestPageUsingHypothesis(unittest.TestCase):
     """Property-based testing with Hypothesis"""
 
+    @example('W4_Back_240314.indd')
     @given(st.sampled_from(GOOD_NAMES))
     def test_Page_accepts_known_good(self, name):
         """Page should accept known-good names from a corpus"""
@@ -213,8 +219,9 @@ class TestPageUsingHypothesis(unittest.TestCase):
         except ValueError as e:
             self.fail(f'Page raised ValueError: {e}\nFor name: {name}')
 
+    @example('18_advertisement2_280415.indd')
     @given(st.sampled_from(BAD_NAMES))
-    def test_Page_accepts_known_bad(self, name):
+    def test_Page_rejects_known_bad(self, name):
         """Page should reject known-bad names from a corpus"""
         with self.assertRaises(ValueError):
             msutils.Page(page_path=Path(name))
