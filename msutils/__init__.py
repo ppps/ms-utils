@@ -11,6 +11,7 @@ class Page(object):
 
     _page_name_regex = re.compile('''\
     ^
+    (?P<prefix> [a-zA-Z]* )
     (?P<first_page>  \d+)
     (?: -
         (?P<second_page> \d+)
@@ -18,9 +19,10 @@ class Page(object):
     [-_ ]*
     (?P<section> \D+? )
     [-_ ]*
-    (?P<date> \d{6} )
+    (?P<date> \d{6} | \d{2}-\d{2}-\d{2,4} )
     \.
     (?P<type> \w+ )
+    $
     ''', flags=re.VERBOSE)
 
     _page_date_format = '%d%m%y'
@@ -47,8 +49,13 @@ class Page(object):
             pages.append(regex_match['second_page'])
         self.pages = tuple(map(int, pages))
 
-        self.date = datetime.strptime(regex_match['date'],
-                                      self._page_date_format)
+        date_match = regex_match['date'].replace('-', '')
+        if len(date_match) == 8:
+            date_match = date_match[:-4] + date_match[-2:]
+
+        self.date = datetime.strptime(date_match, self._page_date_format)
+
+        self.prefix = regex_match['prefix']
         self.section = regex_match['section']
         self.type = regex_match['type'].lower()
 
