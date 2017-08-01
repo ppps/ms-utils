@@ -214,11 +214,9 @@ class TestPageUsingHypothesis(unittest.TestCase):
     @given(st.sampled_from(GOOD_NAMES))
     def test_Page_accepts_known_good(self, name):
         """Page should accept known-good names from a corpus"""
-        try:
-            page = msutils.Page(page_path=Path(name))
-        except ValueError as e:
-            self.fail(f'Page raised ValueError: {e}\nFor name: {name}')
+        page = msutils.Page(page_path=Path(name))
 
+    @example('10_film29-02-03.indd')
     @example('18_advertisement2_280415.indd')
     @given(st.sampled_from(BAD_NAMES))
     def test_Page_rejects_known_bad(self, name):
