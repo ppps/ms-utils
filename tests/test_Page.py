@@ -2,7 +2,27 @@ from datetime import datetime
 from pathlib import Path
 import unittest
 
+from hypothesis import given
+import hypothesis.strategies as st
+
 import msutils
+
+TEST_DIR = Path(__file__).parent
+
+good_names_dir = Path(TEST_DIR, 'sample-names/pass')
+bad_names_dir = Path(TEST_DIR, 'sample-names/fail')
+filter_txt = lambda d: (p for p in d.iterdir() if p.suffix == '.txt')
+GOOD_NAMES = []
+BAD_NAMES = []
+for file in filter_txt(good_names_dir):
+    with open(file, encoding='utf-8') as names_file:
+        for line in names_file:
+            GOOD_NAMES.append(line.rstrip())
+
+for file in filter_txt(bad_names_dir):
+    with open(file, encoding='utf-8') as names_file:
+        for line in names_file:
+            BAD_NAMES.append(line.rstrip())
 
 
 class TestPageNameParsing(unittest.TestCase):
@@ -180,6 +200,25 @@ class TestPageExternalName(unittest.TestCase):
         page = msutils.Page(Path('2-3_Home_040516.indd'))
         with self.assertRaisesRegex(ValueError, 'multiple pages'):
             page.external_name()
+
+
+class TestPageUsingHypothesis(unittest.TestCase):
+    """Property-based testing with Hypothesis"""
+
+    @given(st.sampled_from(GOOD_NAMES))
+    def test_Page_accepts_known_good(self, name):
+        """Page should accept known-good names from a corpus"""
+        try:
+            page = msutils.Page(page_path=Path(name))
+        except ValueError as e:
+            self.fail(f'Page raised ValueError: {e}\nFor name: {name}')
+
+    @given(st.sampled_from(BAD_NAMES))
+    def test_Page_accepts_known_bad(self, name):
+        """Page should reject known-bad names from a corpus"""
+        with self.assertRaises(ValueError):
+            msutils.Page(page_path=Path(name))
+
 
 
 if __name__ == '__main__':
