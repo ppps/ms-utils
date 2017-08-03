@@ -20,14 +20,14 @@ class TestEditionDir(unittest.TestCase):
     If there is no such edition it should raise a msutils.NoEditionError.
     """
     @given(dt=st.datetimes())
-    @mock.patch.object(msutils.Path, 'exists', return_value=True)
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_returns_path(self, mock_exists, dt):
         """edition_dir returns a Path object"""
         ed = msutils.edition_dir(dt)
         self.assertIsInstance(ed, pathlib.Path)
 
     @given(dt=st.datetimes())
-    @mock.patch.object(msutils.Path, 'exists', return_value=True)
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_expected_format(self, mock_exists, dt):
         """edition_dir uses expected path format
 
@@ -41,7 +41,7 @@ class TestEditionDir(unittest.TestCase):
 
         Hypothesis is used to generate datetimes
         """
-        ed = msutils.edition_dir(self.no_edition)
+        ed = msutils.edition_dir(dt)
         expected = f'/Users/admin/Server/Pages/{dt:%Y-%m-%d %A %b %-d}'
         self.assertEqual(str(ed), expected)
 
@@ -72,26 +72,26 @@ class TestEditionFiles(unittest.TestCase):
         self.indd_names = [pathlib.Path(n + 'indd') for n in names]
         self.pdf_names = [pathlib.Path(n + 'pdf') for n in names]
 
-    @mock.patch.object(msutils.Path, 'exists', return_value=True)
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_indd_files_extensions(self, mock_exists):
         """Test Page types for edition_indd_files
 
         All the Pages returned by the function should have a .type of 'indd'
         """
         indd_gen = (x for x in self.indd_names)
-        with mock.patch.object(msutils.Path, 'iterdir',
+        with mock.patch.object(msutils.edition.Path, 'iterdir',
                                return_value=indd_gen):
             res = msutils.edition_indd_files(self.no_edition)
             self.assertEqual({p.type for p in res}, {'indd'})
 
-    @mock.patch.object(msutils.Path, 'exists', return_value=True)
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_pdf_files_extensions(self, mock_exists):
         """Test Page types for edition_press_pdfs and edition_web_pdfs
 
         All the Pages returned by the function should have a .type of 'pdf'
         """
         pdf_gen = (x for x in self.pdf_names)
-        with mock.patch.object(msutils.Path, 'iterdir',
+        with mock.patch.object(msutils.edition.Path, 'iterdir',
                                return_value=pdf_gen):
             res = msutils.edition_press_pdfs(self.no_edition)
             res.extend(msutils.edition_web_pdfs(self.no_edition))
