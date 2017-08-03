@@ -50,10 +50,14 @@ class Page(object):
         self.pages = tuple(map(int, pages))
 
         date_match = regex_match['date'].replace('-', '')
-        if len(date_match) == 8:
-            date_match = date_match[:-4] + date_match[-2:]
+        if len(date_match) == 6:
+            date_format = '%d%m%y'
+        elif len(date_match) == 8:
+            date_format = '%d%m%Y'
+        else:
+            raise ValueError("Page's date does not have 6 or 8 digits")
 
-        self.date = datetime.strptime(date_match, self._page_date_format)
+        self.date = datetime.strptime(date_match, date_format)
 
         self.prefix = regex_match['prefix']
         self.section = regex_match['section']
