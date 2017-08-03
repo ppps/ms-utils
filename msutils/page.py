@@ -11,7 +11,7 @@ class Page(object):
 
     _page_name_regex = re.compile('''\
     ^
-    (?P<prefix> [a-zA-Z]{0,1} )
+    (?P<prefix> [A-Z]{0,1} )
     (?P<first_page>  \d+)
     (?: -
         (?P<second_page> \d+)
@@ -21,9 +21,9 @@ class Page(object):
     [-_ ]*
     (?P<date> \d{6} | \d{2}-\d{2}-\d{2,4} )
     \.
-    (?P<type> \w+ )
+    (?P<type> indd | pdf )
     $
-    ''', flags=re.VERBOSE)
+    ''', flags=re.VERBOSE|re.IGNORECASE)
 
     _page_date_format = '%d%m%y'
 
