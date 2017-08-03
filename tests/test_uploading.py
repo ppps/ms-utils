@@ -22,9 +22,15 @@ class TestFTP(unittest.TestCase):
     """
     def setUp(self):
         m = mock.Mock()
+        m.path = '/Mock/Path.file'
         m.external_name.return_value = 'Renamed'
         self.mock_pages = [m]
-        self.ftp_args = dict(host='host', user='user', passwd='passwd')
+
+        self.call_args = dict(host='host', user='user', password='password')
+        self.ftp_args = call_args
+        del self.ftp_args['password']
+        self.ftp_args['passwd'] = 'password'
+        
         self.path = 'sub/dir'
     
     @mock.patch.object(msutils.ftplib.FTP, autospec=True)
@@ -32,9 +38,9 @@ class TestFTP(unittest.TestCase):
         """FTP constructor should be called with correct args"""
         msutils.send_pages_ftp(
                 pages=self.mock_pages,
-                **self.ftp_args
+                **self.call_args
                 )
-        mock_FTP.assert_called_with(args)
+        mock_FTP.assert_called_with(self.ftp_args)
 
     @mock.patch.object(msutils.ftplib.FTP, autospec=True)
     def test_FTP_right_directory(self, mock_FTP):
@@ -42,7 +48,7 @@ class TestFTP(unittest.TestCase):
         msutils.send_pages_ftp(
             pages=self.mock_pages,
             path=self.path,
-            **self.ftp_args
+            **self.call_args
             )
         mock_FTP.cwd.assert_called_with(self.path)
     
@@ -55,12 +61,13 @@ class TestFTP(unittest.TestCase):
         msutils.send_pages_ftp(
             pages=self.mock_pages,
             rename=False,
-            **self.ftp_args
+            **self.call_args
             )
             
-        page_str = str(self.mock_pages[0])
+        mock_page = self.mock_pages[0]
+        page_str = str(mock_page)
         mock_open.assert_called_once()
-        mock_open.assert_called_with(str(self.mock_pages[0]), 'b')
+        mock_open.assert_called_with(mock_page.path, 'b')
         mock_FTP.storbinary.assert_called_once()
         mock.FTP.storbinary.assert_called_with(
                 f'STOR { page_str }', open_retval)
@@ -74,17 +81,97 @@ class TestFTP(unittest.TestCase):
         msutils.send_pages_ftp(
             pages=self.mock_pages,
             rename=True,
-            **self.ftp_args
+            **self.call_args
             )
-            
-        page_name = self.mock_pages.external_name()
+        
+        mock_page = self.mock_pages[0]
+        page_name = mock_page.external_name()
         mock_open.assert_called_once()
-        mock_open.assert_called_with(str(self.mock_pages[0]), 'b')
+        mock_open.assert_called_with(mock_page.path, 'b')
         mock_FTP.storbinary.assert_called_once()
         mock.FTP.storbinary.assert_called_with(
                 f'STOR { page_name }', open_retval)
 
 
 class TestSFTP(unittest.TestCase):
-    pass
+    """Test the SFTP uploading function send_pages_sftp
+    
+    Its signature should match:
+        send_pages_sftp(
+            pages: [Page],
+            host: str,
+            port: int = 22,
+            user: str,
+            password: str = None
+            path: str = None,
+            rename: bool = True
+            )
+    
+    It should iterate over the pages and upload them to
+    the SFTP server, renaming them if specified, to the
+    root or to the specified subdirectory (path).
+    
+    It should load keys from the system so that passwords
+    are not required.
+    """
+    def setUp(self):
+        m = mock.Mock()
+        m.path = '/Mock/Path.file'
+        m.external_name.return_value = 'Renamed'
+        self.mock_pages = [m]
+        
+        self.call_args = dict(host='host', user='user',
+                              password='password', port=526)
+        self.sftp_args = dict(hostname='host', username='user',
+                              password='password', port=526)
+                              
+        self.path = 'sub/dir'
+        
+    @mock.patch.object(mutils.paramiko.SSHClient, autospec=True)
+    def test_SFTP_called_with_args(self, mock_ssh):
+        """Connection attempted with passed in arguments"""
+        msutils.send_pages_sftp(
+            pages=self.mock_pages,
+            **self.call_args)
+        mock_ssh.assert_called_once()
+        mock_ssh.connect.assert_called_with(**self.sftp_args)
+        
+    @mock.patch.object(mutils.paramiko.SSHClient, autospec=True)
+    def test_SFTP_right_directory(self, mock_ssh):
+        """SFTP directory is changed after connection"""
+        sftp = mock.Mock(spec=msutils.paramiko.SFTPClient)
+        mock_ssh.open_sftp.return_value = sftp
+        msutils.send_pages_sftp(
+            pages=self.mock_pages,
+            path=self.path
+            **self.call_args)
+        sftp.chdir.assert_called_with(self.path)
+
+    @mock.patch.object(mutils.paramiko.SSHClient, autospec=True)
+    def test_SFTP_put_no_rename(self, mock_ssh):
+        """SFTP puts local files without renaming"""
+        sftp = mock.Mock(spec=msutils.paramiko.SFTPClient)
+        mock_ssh.open_sftp.return_value = sftp
+        msutils.send_pages_sftp(
+            pages=self.mock_pages,
+            path=self.path,
+            rename=False,
+            **self.call_args)
+        sftp.put.assert_called_with(
+            self.mock_pages[0].path,
+            str(self.mock_pages[0]))
+
+    @mock.patch.object(mutils.paramiko.SSHClient, autospec=True)
+    def test_SFTP_put_renamed(self, mock_ssh):
+        """SFTP puts local files and renames them"""
+        sftp = mock.Mock(spec=msutils.paramiko.SFTPClient)
+        mock_ssh.open_sftp.return_value = sftp
+        msutils.send_pages_sftp(
+            pages=self.mock_pages,
+            path=self.path,
+            rename=True,
+            **self.call_args)
+        sftp.put.assert_called_with(
+            self.mock_pages[0].path,
+            self.mock_pages[0].external_name())
 
