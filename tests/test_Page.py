@@ -210,7 +210,8 @@ class TestPageExternalName(unittest.TestCase):
 class TestPageUsingHypothesis(unittest.TestCase):
     """Property-based testing with Hypothesis"""
 
-    @example('W4_Back_240314.indd')
+    @example('1_Front_03082017.indd')    # Allow 8-digit dates unhyphenated
+    @example('W4_Back_240314.indd')      # Allow prefixes
     @given(st.sampled_from(GOOD_NAMES))
     def test_Page_accepts_known_good(self, name):
         """Page should accept known-good names from a corpus"""
