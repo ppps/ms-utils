@@ -224,6 +224,70 @@ class TestPageUsingHypothesis(unittest.TestCase):
         with self.assertRaises(ValueError):
             msutils.Page(page_path=Path(name))
 
+    @st.composite
+    def _page_name_with_comparators(draw):
+        """Hypothesis strategy that returns a page name and its key parts
+        
+        This strategy provides a tuple as such:
+            ('1_Front_311229.indd',      # page name
+             (datetime(1929, 12, 31),    # edition date
+              'indd',                    # file type
+              '',                        # prefix
+              1,                         # page number (left-hand if spread)
+              'front')                   # section (.lower())
+             )
+ 
+        The intention is that the page name can be used as an
+        argument to Page, and the tuple of represented elements
+        is used as a sorting key.
+        
+        The order above might appear odd at first glance, but it
+        achieves the following:
+            * Each edition's files are grouped together (date)
+            * Each type of page is grouped together (indd/pdf)
+            * Within each type, prefixes are grouped (including '')
+            * Then the page ordering comes into effect
+            * Lastly the section is included, lowered, for alphabetical sort
+              (It is unlikely the section would ever be needed, and is
+              probably actually a sign that something has gone wrong.)
+        
+        This would provide the following order:
+            1_Front_200129.indd
+            2_Home_200129.indd
+            1_Front_200129.pdf
+            2_Home_200129.pdf
+            1_Front_210129.indd
+            2_Home_210129.indd
+           A1_Insert_210129.indd
+           A2_Insert_210129.indd
+            1_Front_210129.pdf
+            2_Home_210129.pdf
+           A1_Insert_210129.pdf
+           A2_Insert_210129.pdf
+        
+        (Note: 1929 is used as an example here, as it was the year before
+        the Daily Worker was first published, but the date range generated
+        is constrained to stop problems arising with the use of the six-
+        digit date being parsed and datetime assuming the wrong century.
+        
+        This is judged to be acceptable because the domain for these pages
+        is the computer files used to publish the Morning Star, for which
+        we only have files going back to 2002 — and the earlier editions in
+        this range don't consist of single files that could be represented
+        by the Page class.)
+        """
+        pass
+
+    # This horrendous decorator is being replaced
+    # by the composite function above
+    @given(
+        st.integers(min_value=1, max_value=100),
+        st.datetimes(),
+        st.sampled_from('Home', 'Foreign', 'Features', 'Arts', 'Sport')
+        st.integers(min_value=1, max_value=100),
+        st.datetimes())
+    def test_Page_equal(self, p1_num, p1_date, p2_num, p2_date):
+        pass
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
