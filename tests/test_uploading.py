@@ -84,3 +84,7 @@ class TestFTP(unittest.TestCase):
         mock.FTP.storbinary.assert_called_with(
                 f'STOR { page_name }', open_retval)
 
+
+class TestSFTP(unittest.TestCase):
+    pass
+
