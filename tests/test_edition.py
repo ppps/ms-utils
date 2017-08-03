@@ -31,8 +31,8 @@ class TestEditionDir(unittest.TestCase):
     def test_expected_format(self, mock_exists, dt):
         """edition_dir uses expected path format
 
-        Edition dirs are found at:
-                /Users/admin/Server/Pages/%Y-%m-%d %A %b %-d
+        Edition dirs are found on the server at:
+                ~/Server/Pages/%Y-%m-%d %A %b %-d
         ie:
                 /…/2017-08-02 Wednesday Aug 2
 
@@ -42,8 +42,8 @@ class TestEditionDir(unittest.TestCase):
         Hypothesis is used to generate datetimes
         """
         ed = msutils.edition_dir(dt)
-        expected = f'/Users/admin/Server/Pages/{dt:%Y-%m-%d %A %b %-d}'
-        self.assertEqual(str(ed), expected)
+        expected = Path(f'~/Server/Pages/{dt:%Y-%m-%d %A %b %-d}').expanduser()
+        self.assertEqual(ed, expected)
 
     @given(st.one_of(
             st.datetimes(max_datetime=datetime(2002, 1, 1)),
