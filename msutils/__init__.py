@@ -11,7 +11,7 @@ class Page(object):
 
     _page_name_regex = re.compile('''\
     ^
-    (?P<prefix> [a-zA-Z]* )
+    (?P<prefix> [a-zA-Z]{0,1} )
     (?P<first_page>  \d+)
     (?: -
         (?P<second_page> \d+)
