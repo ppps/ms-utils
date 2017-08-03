@@ -4,7 +4,7 @@ from .page import Page
 
 PAGES_ROOT = Path('~/Server/Pages/').expanduser()
 PAGES_TEMPLATE = '{0:%Y-%m-%d %A %b %-d}'
-PDFS_TEMPLATE = '{0:PDFs %d%m%}'
+PDFS_TEMPLATE = '{0:PDFs %d%m%y}'
 WEB_PDFS_TEMPLATE = '{0:E-edition PDFs %d%m%y}'
 
 
@@ -54,7 +54,7 @@ def _parse_pdfs_dir(path):
     # PDFs directory may not exist yet, even if the edition does
     if not path.exists():
         return []
-    all_pdfs = [p for p in path.iterdir() if p.suffix = '.pdf']
+    all_pdfs = [p for p in path.iterdir() if p.suffix == '.pdf']
     return sorted(_paths_to_pages(all_pdfs))
 
 
