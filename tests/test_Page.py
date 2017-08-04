@@ -12,7 +12,14 @@ TEST_DIR = Path(__file__).parent
 
 good_names_dir = Path(TEST_DIR, 'sample-names/pass')
 bad_names_dir = Path(TEST_DIR, 'sample-names/fail')
-filter_txt = lambda d: (p for p in d.iterdir() if p.suffix == '.txt')
+
+
+def filter_txt(directory):
+    for path in directory.iterdir():
+        if path.suffix == '.txt':
+            yield path
+
+
 GOOD_NAMES = []
 BAD_NAMES = []
 for file in filter_txt(good_names_dir):
