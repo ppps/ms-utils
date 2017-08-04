@@ -281,15 +281,14 @@ class TestPageUsingHypothesis(unittest.TestCase):
 
     # This horrendous decorator is being replaced
     # by the composite function above
-
-    @given(
-        st.integers(min_value=1, max_value=100),
-        st.datetimes(),
-        st.sampled_from(['Home', 'Foreign', 'Features', 'Arts', 'Sport']),
-        st.integers(min_value=1, max_value=100),
-        st.datetimes())
-    def test_Page_equal(self, *args):
-        pass
+#     @given(
+#         st.integers(min_value=1, max_value=100),
+#         st.datetimes(),
+#         st.sampled_from(['Home', 'Foreign', 'Features', 'Arts', 'Sport']),
+#         st.integers(min_value=1, max_value=100),
+#         st.datetimes())
+#     def test_Page_equal(self, *args):
+#         pass
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
