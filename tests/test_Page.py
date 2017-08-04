@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pathlib import Path
 import string
 import unittest
@@ -309,19 +309,19 @@ class TestPageUsingHypothesis(unittest.TestCase):
             num_2 = None
 
         section = draw(text_no_nums_or_control)
-        date = draw(st.datetimes(
-            min_datetime=datetime(2000, 1, 1),
-            max_datetime=datetime(2033, 1, 1)))
+        p_date = draw(st.dates(
+            min_date=date(2000, 1, 1),
+            max_date=date(2033, 1, 1)))
         suffix = draw(st.sampled_from(['pdf', 'indd']))
 
         if num_2 is None:
-            page_name = f'{prefix}{num_1}_{section}_{date:%d%m%y}.{suffix}'
+            page_name = f'{prefix}{num_1}_{section}_{p_date:%d%m%y}.{suffix}'
         else:
             page_name = (f'{prefix}{num_1}-{num_2}_'
-                         f'{section}_{date:%d%m%y}.{suffix}')
+                         f'{section}_{p_date:%d%m%y}.{suffix}')
 
         return (Path(page_name),
-                (date, suffix, prefix, num_1, section.lower()))
+                (p_date, suffix, prefix, num_1, section.lower()))
 
     @given(_page_name_with_comparators())
     def test_Page_self_equal(self, arg_tuple):
