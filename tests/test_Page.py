@@ -3,7 +3,7 @@ from pathlib import Path
 import string
 import unittest
 
-from hypothesis import given, example
+from hypothesis import given, example, assume
 import hypothesis.strategies as st
 
 import msutils
@@ -238,12 +238,12 @@ class TestPageUsingHypothesis(unittest.TestCase):
         """Hypothesis strategy that returns a page name and its key parts
 
         This strategy provides a tuple as such:
-            ('1_Front_311229.indd',      # page name
-             (datetime(1929, 12, 31),    # edition date
-              'indd',                    # file type
-              '',                        # prefix
-              1,                         # page number (left-hand if spread)
-              'front')                   # section (.lower())
+            (Path('1_Front_311229.indd'),   # page name as Path
+             (datetime(1929, 12, 31),       # edition date
+              'indd',                       # file type
+              '',                           # prefix
+              1,                            # page number (left-hand if spread)
+              'front')                      # section (.lower())
              )
 
         The intention is that the page name can be used as an
@@ -289,7 +289,10 @@ class TestPageUsingHypothesis(unittest.TestCase):
         # No numbers so that it matches \D (for the section)
         # No control characters to head off any headaches
         # (We're not testing the text handling here.)
-        num_control_cats = ['Nd', 'Nl', 'No', 'Cc', 'Cf', 'Cs', 'Co', 'Cn']
+        # Po is included to exclude slashes (which are parsed as
+        # directory separators by pathlib).
+        num_control_cats = ['Po', 'Nd', 'Nl', 'No',
+                            'Cc', 'Cf', 'Cs', 'Co', 'Cn']
         text_no_nums_or_control = st.text(
             alphabet=st.characters(blacklist_categories=num_control_cats),
             min_size=1, max_size=16)
@@ -317,19 +320,69 @@ class TestPageUsingHypothesis(unittest.TestCase):
             page_name = (f'{prefix}{num_1}-{num_2}_'
                          f'{section}_{date:%d%m%y}.{suffix}')
 
-        return (page_name,
+        return (Path(page_name),
                 (date, suffix, prefix, num_1, section.lower()))
 
-    # This horrendous decorator is being replaced
-    # by the composite function above
-#     @given(
-#         st.integers(min_value=1, max_value=100),
-#         st.datetimes(),
-#         st.sampled_from(['Home', 'Foreign', 'Features', 'Arts', 'Sport']),
-#         st.integers(min_value=1, max_value=100),
-#         st.datetimes())
-#     def test_Page_equal(self, *args):
-#         pass
+    @given(_page_name_with_comparators())
+    def test_Page_self_equal(self, arg_tuple):
+        """Pages that have matching attributes compare equal
+
+        In this case, we instantiate two Pages with the same path
+        and assert that they should compare equal to each other.
+
+        Page should compare on the following, in this order:
+            * Date
+            * Type (file extension)
+            * Prefix
+            * Page number (left-hand if a spread)
+            * Section (case-insensitively)
+        """
+        page_path, _ = arg_tuple
+        page_1 = msutils.Page(page_path)
+        page_2 = msutils.Page(page_path)
+        self.assertEqual(page_1, page_2)
+
+    @given(_page_name_with_comparators(),
+           _page_name_with_comparators())
+    def test_Page_two_equal(self, page1_tuple, page2_tuple):
+        """Pages instantiated from the same path are the same
+
+        In this case, we instantiate two Pages with different paths
+        and assert that they should compare equal to each other if
+        and only if their list comparison keys compare equal.
+        """
+        p1_path, p1_list = page1_tuple
+        p2_path, p2_list = page2_tuple
+        page_1 = msutils.Page(p1_path)
+        page_2 = msutils.Page(p2_path)
+
+        if p1_list == p2_list:
+            self.assertEqual(page_1, page_2)
+        else:
+            self.assertNotEqual(page_1, page_2)
+
+    @given(_page_name_with_comparators(),
+           _page_name_with_comparators())
+    def test_Page_compare(self, page1_tuple, page2_tuple):
+        """Pages sort according to their comparison keys
+
+        In this case, we instantiate two Pages with different paths
+        and assert that they should compare less than or greater
+        than based on how their list comparison keys compare.
+        """
+        p1_path, p1_list = page1_tuple
+        p2_path, p2_list = page2_tuple
+
+        assume(p1_list != p2_list)  # Skip test if the pages are equal
+
+        page_1 = msutils.Page(p1_path)
+        page_2 = msutils.Page(p2_path)
+
+        if p1_list < p2_list:
+            self.assertLess(page_1, page_2)
+        elif p1_list > p2_list:
+            self.assertGreater(page_1, page_2)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
