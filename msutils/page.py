@@ -19,7 +19,7 @@ class Page(object):
     [-_ ]*
     (?P<section> \D+? )
     [-_ ]*
-    (?P<date> \d{6} | \d{2}-\d{2}-\d{2,4} )
+    (?P<date> \d{6} | \d{8} | \d{2}-\d{2}-\d{2,4} )
     \.
     (?P<type> indd | pdf )
     $
