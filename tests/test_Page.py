@@ -314,7 +314,8 @@ class TestPageUsingHypothesis(unittest.TestCase):
         if num_2 is None:
             page_name = f'{prefix}{num_1}_{section}_{date:%d%m%y}.{suffix}'
         else:
-            page_name = f'{prefix}{num_1}-{num_2}_{section}_{date:%d%m%y}.{suffix}'
+            page_name = (f'{prefix}{num_1}-{num_2}_'
+                         f'{section}_{date:%d%m%y}.{suffix}')
 
         return (page_name,
                 (date, suffix, prefix, num_1, section.lower()))
