@@ -57,7 +57,7 @@ class Page(object):
         else:
             raise ValueError("Page's date does not have 6 or 8 digits")
 
-        self.date = datetime.strptime(date_match, date_format)
+        self.date = datetime.strptime(date_match, date_format).date()
 
         self.prefix = regex_match['prefix']
         self.section = regex_match['section']

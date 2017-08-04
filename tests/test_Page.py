@@ -41,7 +41,7 @@ class TestPageNameParsing(unittest.TestCase):
         filename = Path('1_Front_040516.indd')
         expected = {'pages': (1,),
                     'section': 'Front',
-                    'date': datetime(2016, 5, 4)}
+                    'date': date(2016, 5, 4)}
         result = msutils.Page(filename)
         for attr, value in expected.items():
             self.assertEqual(value, getattr(result, attr))
@@ -63,7 +63,7 @@ class TestPageNameParsing(unittest.TestCase):
         filename = Path('4-5_advert_Home_280414.indd')
         expected = {'pages': (4, 5),
                     'section': 'advert_Home',
-                    'date': datetime(2014, 4, 28)}
+                    'date': date(2014, 4, 28)}
         result = msutils.Page(filename)
         for attr, value in expected.items():
             self.assertEqual(value, getattr(result, attr))
@@ -73,7 +73,7 @@ class TestPageNameParsing(unittest.TestCase):
         filename = Path('10-11-FEATURES-251014.indd')
         expected = {'pages': (10, 11),
                     'section': 'FEATURES',
-                    'date': datetime(2014, 10, 25)}
+                    'date': date(2014, 10, 25)}
         result = msutils.Page(filename)
         for attr, value in expected.items():
             self.assertEqual(value, getattr(result, attr))
@@ -83,7 +83,7 @@ class TestPageNameParsing(unittest.TestCase):
         filename = Path('14-15 Features 150314.indd')
         expected = {'pages': (14, 15),
                     'section': 'Features',
-                    'date': datetime(2014, 3, 15)}
+                    'date': date(2014, 3, 15)}
         result = msutils.Page(filename)
         for attr, value in expected.items():
             self.assertEqual(value, getattr(result, attr))
@@ -93,7 +93,7 @@ class TestPageNameParsing(unittest.TestCase):
         filename = Path('11_Arts_ 231214.indd')
         expected = {'pages': (11,),
                     'section': 'Arts',
-                    'date': datetime(2014, 12, 23)}
+                    'date': date(2014, 12, 23)}
         result = msutils.Page(filename)
         for attr, value in expected.items():
             self.assertEqual(value, getattr(result, attr))
@@ -239,7 +239,7 @@ class TestPageUsingHypothesis(unittest.TestCase):
 
         This strategy provides a tuple as such:
             (Path('1_Front_311229.indd'),   # page name as Path
-             (datetime(1929, 12, 31),       # edition date
+             (date(1929, 12, 31),           # edition date
               'indd',                       # file type
               '',                           # prefix
               1,                            # page number (left-hand if spread)
