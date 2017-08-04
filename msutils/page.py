@@ -72,6 +72,12 @@ class Page(object):
         return '{0}({1})'.format(self.__class__.__name__,
                                  repr(self.path))
 
+    @staticmethod
+    def _comparison_keys(page):
+        """Return list of important attributes for comparisons"""
+        return (page.date, page.type, page.prefix,
+                page.pages[0], page.section.lower())
+
     def __eq__(self, other):
         """Test for equality against another Page
 
@@ -82,14 +88,22 @@ class Page(object):
             * pages[0] (right-hand page number is ignored)
             * section (case-insensitively)
         """
-        self_keys = [self.date, self.type, self.prefix,
-                     self.pages[0], self.section.lower()]
-        other_keys = [other.date, other.type, other.prefix,
-                      other.pages[0], other.section.lower()]
-        return self_keys == other_keys
+        return self._comparison_keys(self) == self._comparison_keys(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __lt__(self, other):
+        return self._comparison_keys(self) < self._comparison_keys(other)
+
+    def __gt__(self, other):
+        return self._comparison_keys(self) > self._comparison_keys(other)
+
+    def __le__(self, other):
+        return (self.__lt__(other) or self.__eq__(other))
+
+    def __ge__(self, other):
+        return (self.__ge__(other) or self.__eq__(other))
 
     def external_name(self):
         """Returns string used outside the Star to identify the page
