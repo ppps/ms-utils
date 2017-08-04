@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+import string
 import unittest
 
 from hypothesis import given, example
@@ -277,7 +278,39 @@ class TestPageUsingHypothesis(unittest.TestCase):
         this range don't consist of single files that could be represented
         by the Page class.)
         """
-        pass
+        # Strategy that has no numbers and no control characters
+        # No numbers so that it matches \D (for the section)
+        # No control characters to head off any headaches
+        # (We're not testing the text handling here.)
+        num_control_cats = ['Nd', 'Nl', 'No', 'Cc', 'Cf', 'Cs', 'Co', 'Cn']
+        text_no_nums_or_control = st.text(
+            alphabet=st.characters(blacklist_categories=num_control_cats),
+            min_size=1, max_size=16)
+
+        # Either the empty string or a single uppercase ASCII letter
+        prefix = draw(st.one_of(
+            st.just(''),
+            st.sampled_from(string.ascii_uppercase)))
+
+        num_1 = draw(st.integers(min_value=1, max_value=100))
+        if (not num_1 % 2) and draw(st.booleans()):
+            num_2 = num_1 + 1
+        else:
+            num_2 = None
+
+        section = draw(text_no_nums_or_control)
+        date = draw(st.datetimes(
+            min_datetime=datetime(2000, 1, 1),
+            max_datetime=datetime(2033, 1, 1)))
+        suffix = draw(st.sampled_from(['pdf', 'indd']))
+
+        if num_2 is None:
+            page_name = f'{prefix}{num_1}_{section}_{date:%d%m%y}.{suffix}'
+        else:
+            page_name = f'{prefix}{num_1}-{num_2}_{section}_{date:%d%m%y}.{suffix}'
+
+        return (page_name,
+                (date, suffix, prefix, num_1, section.lower()))
 
     # This horrendous decorator is being replaced
     # by the composite function above
