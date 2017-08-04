@@ -23,7 +23,7 @@ class Page(object):
     \.
     (?P<type> indd | pdf )
     $
-    ''', flags=re.VERBOSE|re.IGNORECASE)
+    ''', flags=re.VERBOSE | re.IGNORECASE)
 
     _page_date_format = '%d%m%y'
 
@@ -72,6 +72,25 @@ class Page(object):
         return '{0}({1})'.format(self.__class__.__name__,
                                  repr(self.path))
 
+    def __eq__(self, other):
+        """Test for equality against another Page
+
+        The following attributes are considered, in this order:
+            * date
+            * type
+            * prefix
+            * pages[0] (right-hand page number is ignored)
+            * section (case-insensitively)
+        """
+        self_keys = [self.date, self.type, self.prefix,
+                     self.pages[0], self.section.lower()]
+        other_keys = [other.date, other.type, other.prefix,
+                      other.pages[0], other.section.lower()]
+        return self_keys == other_keys
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def external_name(self):
         """Returns string used outside the Star to identify the page
 
@@ -87,4 +106,3 @@ class Page(object):
             date=self.date,
             page=self.pages[0],
             type=self.type)
-
