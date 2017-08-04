@@ -42,7 +42,8 @@ class TestEditionDir(unittest.TestCase):
         Hypothesis is used to generate datetimes
         """
         ed = msutils.edition_dir(dt)
-        expected = Path(f'~/Server/Pages/{dt:%Y-%m-%d %A %b %-d}').expanduser()
+        expected = pathlib.Path(f'~/Server/Pages/{dt:%Y-%m-%d %A %b %-d}')
+        expected = expected.expanduser()
         self.assertEqual(ed, expected)
 
     @given(st.one_of(
