@@ -297,6 +297,22 @@ class TestPageUsingHypothesis(unittest.TestCase):
             alphabet=st.characters(blacklist_categories=num_control_cats),
             min_size=1, max_size=16)
 
+        section = draw(text_no_nums_or_control)
+        # Page strips separator characters from the section name, so
+        # hypothesis shouldn't complain when they don't show up later.
+        #
+        # We assume that section is not the empty string when they're
+        # stripped, but don't strip them from the section itself as
+        # it's perfectly fine to include them.
+        #
+        # They are however stripped from the section comparison key
+        # in the tuple that is returned.
+        #
+        # The generation of the section is higher up than it otherwise
+        # might be to save us a bit of time if assume causes hypothesis
+        # to bail on the strategy and try again.
+        assume(section.strip(' -_'))
+
         # Either the empty string or a single uppercase ASCII letter
         prefix = draw(st.one_of(
             st.just(''),
@@ -308,7 +324,6 @@ class TestPageUsingHypothesis(unittest.TestCase):
         else:
             num_2 = None
 
-        section = draw(text_no_nums_or_control)
         p_date = draw(st.dates(
             min_date=date(2000, 1, 1),
             max_date=date(2033, 1, 1)))
@@ -321,7 +336,8 @@ class TestPageUsingHypothesis(unittest.TestCase):
                          f'{section}_{p_date:%d%m%y}.{suffix}')
 
         return (Path(page_name),
-                (p_date, suffix, prefix, num_1, section.lower()))
+                (p_date, suffix, prefix, num_1, section.lower().strip(' -_'))
+                )
 
     @given(_page_name_with_comparators())
     def test_Page_self_equal(self, arg_tuple):
@@ -382,6 +398,14 @@ class TestPageUsingHypothesis(unittest.TestCase):
             self.assertLess(page_1, page_2)
         elif p1_list > p2_list:
             self.assertGreater(page_1, page_2)
+
+    @given(_page_name_with_comparators())
+    def test_Page_comparison_keys(self, arg_tuple):
+        page_path, keys = arg_tuple
+        page = msutils.Page(page_path)
+        self.assertEqual(
+            msutils.Page._comparison_keys(page),
+            keys)
 
 
 if __name__ == '__main__':
