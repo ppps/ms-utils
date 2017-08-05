@@ -76,7 +76,7 @@ class Page(object):
     def _comparison_keys(page):
         """Return list of important attributes for comparisons"""
         return (page.date, page.type, page.prefix,
-                page.pages[0], page.section.lower())
+                page.pages, page.section.lower())
 
     def __eq__(self, other):
         """Test for equality against another Page

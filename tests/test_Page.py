@@ -208,39 +208,20 @@ class TestPageExternalName(unittest.TestCase):
         self.assertEqual(page.external_name(),
                          expected)
 
-    def test_multiple_pages_raises(self):
-        """external_name raises ValueError for non-single pages"""
+    def test_multiple_pages(self):
+        """external_name correctly formats non-single pages"""
         page = msutils.Page(Path('2-3_Home_040516.indd'))
-        with self.assertRaisesRegex(ValueError, 'multiple pages'):
-            page.external_name()
+        expected = 'MS_2016_05_04_002-003.indd'
+        self.assertEqual(
+            page.external_name(),
+            expected)
 
 
 class TestPageUsingHypothesis(unittest.TestCase):
     """Property-based testing with Hypothesis"""
 
-    @example('1_Front_03082017.indd')    # Allow 8-digit dates unhyphenated
-    @example('W4_Back_240314.indd')      # Allow prefixes
-    @given(st.sampled_from(GOOD_NAMES))
-    def test_Page_accepts_known_good(self, name):
-        """Page should accept known-good names from a corpus
-
-        No assertions here, as Page will raise a ValueError
-        """
-        try:
-            msutils.Page(page_path=Path(name))
-        except ValueError as e:
-            self.fail(e)
-
-    @example('10_film29-02-03.indd')
-    @example('18_advertisement2_280415.indd')
-    @given(st.sampled_from(BAD_NAMES))
-    def test_Page_rejects_known_bad(self, name):
-        """Page should reject known-bad names from a corpus"""
-        with self.assertRaises(ValueError):
-            msutils.Page(page_path=Path(name))
-
     @st.composite
-    def _page_name_with_comparators(draw):
+    def _page_name_with_elements(draw):
         """Hypothesis strategy that returns a page name and its key parts
 
         This strategy provides a tuple as such:
@@ -327,8 +308,10 @@ class TestPageUsingHypothesis(unittest.TestCase):
         num_1 = draw(st.integers(min_value=1, max_value=100))
         if (not num_1 % 2) and draw(st.booleans()):
             num_2 = num_1 + 1
+            p_nums = (num_1, num_2)
         else:
             num_2 = None
+            p_nums = (num_1,)
 
         p_date = draw(st.dates(
             min_date=date(2000, 1, 1),
@@ -342,10 +325,31 @@ class TestPageUsingHypothesis(unittest.TestCase):
                          f'{section}_{p_date:%d%m%y}.{suffix}')
 
         return (Path(page_name),
-                (p_date, suffix, prefix, num_1, section.lower().strip(' -_'))
-                )
+                (p_date, suffix, prefix, p_nums,
+                 section.lower().strip(' -_')))
 
-    @given(_page_name_with_comparators())
+    @example('1_Front_03082017.indd')    # Allow 8-digit dates unhyphenated
+    @example('W4_Back_240314.indd')      # Allow prefixes
+    @given(st.sampled_from(GOOD_NAMES))
+    def test_Page_accepts_known_good(self, name):
+        """Page should accept known-good names from a corpus
+
+        No assertions here, as Page will raise a ValueError
+        """
+        try:
+            msutils.Page(page_path=Path(name))
+        except ValueError as e:
+            self.fail(e)
+
+    @example('10_film29-02-03.indd')
+    @example('18_advertisement2_280415.indd')
+    @given(st.sampled_from(BAD_NAMES))
+    def test_Page_rejects_known_bad(self, name):
+        """Page should reject known-bad names from a corpus"""
+        with self.assertRaises(ValueError):
+            msutils.Page(page_path=Path(name))
+
+    @given(_page_name_with_elements())
     def test_Page_self_equal(self, arg_tuple):
         """Pages that have matching attributes compare equal
 
@@ -364,8 +368,8 @@ class TestPageUsingHypothesis(unittest.TestCase):
         page_2 = msutils.Page(page_path)
         self.assertEqual(page_1, page_2)
 
-    @given(_page_name_with_comparators(),
-           _page_name_with_comparators())
+    @given(_page_name_with_elements(),
+           _page_name_with_elements())
     def test_Page_two_equal(self, page1_tuple, page2_tuple):
         """Pages instantiated from the same path are the same
 
@@ -383,8 +387,8 @@ class TestPageUsingHypothesis(unittest.TestCase):
         else:
             self.assertNotEqual(page_1, page_2)
 
-    @given(_page_name_with_comparators(),
-           _page_name_with_comparators())
+    @given(_page_name_with_elements(),
+           _page_name_with_elements())
     def test_Page_compare(self, page1_tuple, page2_tuple):
         """Pages sort according to their comparison keys
 
@@ -405,13 +409,16 @@ class TestPageUsingHypothesis(unittest.TestCase):
         elif p1_list > p2_list:
             self.assertGreater(page_1, page_2)
 
-    @given(_page_name_with_comparators())
+    @given(_page_name_with_elements())
     def test_Page_comparison_keys(self, arg_tuple):
         page_path, keys = arg_tuple
         page = msutils.Page(page_path)
         self.assertEqual(
             msutils.Page._comparison_keys(page),
             keys)
+
+#    @given(_page_name_with_elements())
+#    def test_
 
 
 if __name__ == '__main__':
