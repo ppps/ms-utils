@@ -11,7 +11,7 @@ class TestFTP(unittest.TestCase):
             pages: [Page],
             host: str,
             user: str,
-            passwd: str = '',
+            password: str = '',
             path: str = None,
             rename: bool = True
             )
@@ -27,7 +27,7 @@ class TestFTP(unittest.TestCase):
         self.mock_pages = [m]
 
         self.call_args = dict(host='host', user='user', password='password')
-        self.ftp_args = self.call_args
+        self.ftp_args = self.call_args.copy()
         del self.ftp_args['password']
         self.ftp_args['passwd'] = 'password'
 
@@ -100,9 +100,9 @@ class TestSFTP(unittest.TestCase):
         send_pages_sftp(
             pages: [Page],
             host: str,
-            port: int = 22,
             user: str,
-            password: str = None
+            password: str = None,
+            port: int = 22,
             path: str = None,
             rename: bool = True
             )
