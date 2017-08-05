@@ -4,7 +4,7 @@ from .page import Page
 
 PAGES_ROOT = Path('~/Server/Pages/').expanduser()
 PAGES_TEMPLATE = '{0:%Y-%m-%d %A %b %-d}'
-PDFS_TEMPLATE = '{0:PDFs %d%m%y}'
+PRESS_PDFS_TEMPLATE = '{0:PDFs %d%m%y}'
 WEB_PDFS_TEMPLATE = '{0:E-edition PDFs %d%m%y}'
 
 
@@ -28,18 +28,6 @@ def edition_dir(date):
         raise NoEditionError(f'Cannot find edition for {date:%Y-%m-%d}')
 
 
-def _edition_press_pdfs_dir(date):
-    """Return path to pre-press PDFs directory for date's edition"""
-    ed_dir = edition_dir(date)
-    return ed_dir.joinpath(PDFS_TEMPLATE.format(date))
-
-
-def _edition_web_pdfs_dir(date):
-    """Return path to pre-press PDFs directory for date's edition"""
-    ed_dir = edition_dir(date)
-    return ed_dir.joinpath(WEB_PDFS_TEMPLATE.format(date))
-
-
 def _paths_to_pages(paths):
     """Yield Pages from Paths, handling exceptions from non-Pages"""
     for p in paths:
@@ -47,15 +35,6 @@ def _paths_to_pages(paths):
             yield Page(p)
         except ValueError:
             continue
-
-
-def _parse_pdfs_dir(path):
-    """List Page-acceptable PDFs in path"""
-    # PDFs directory may not exist yet, even if the edition does
-    if not path.exists():
-        return []
-    all_pdfs = [p for p in path.iterdir() if p.suffix == '.pdf']
-    return sorted(_paths_to_pages(all_pdfs))
 
 
 def directory_indd_files(path):
@@ -75,13 +54,28 @@ def edition_indd_files(date):
     return directory_indd_files(edition_dir(date))
 
 
+def directory_pdfs(path):
+    """List Page-acceptable PDFs in path"""
+    # PDFs directory may not exist yet, even if the edition does
+    if not path.exists():
+        return []
+    all_pdfs = [p for p in path.iterdir() if p.suffix == '.pdf']
+    return sorted(_paths_to_pages(all_pdfs))
+
+
+def _edition_subdirectory(date, subdir_template):
+    """Return path to subdirectory of edition specified in the template"""
+    ed_dir = edition_dir(date)
+    return ed_dir.joinpath(subdir_template.format(date))
+
+
 def edition_press_pdfs(date):
     """List pre-press PDFs for date's edition"""
-    pdfs_dir = _edition_press_pdfs_dir(date)
-    return _parse_pdfs_dir(pdfs_dir)
+    pdfs_dir = _edition_subdirectory(date, PRESS_PDFS_TEMPLATE)
+    return directory_pdfs(pdfs_dir)
 
 
 def edition_web_pdfs(date):
     """List low-quality PDFs for date's edition"""
-    pdfs_dir = _edition_web_pdfs_dir(date)
-    return _parse_pdfs_dir(pdfs_dir)
+    pdfs_dir = _edition_subdirectory(date, WEB_PDFS_TEMPLATE)
+    return directory_pdfs(pdfs_dir)
