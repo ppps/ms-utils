@@ -72,17 +72,41 @@ class TestEditionFiles(unittest.TestCase):
         self.indd_names = [pathlib.Path(n + 'indd') for n in names]
         self.pdf_names = [pathlib.Path(n + 'pdf') for n in names]
 
+    @mock.patch('msutils.edition', 'os.walk')
+    @mock.patch.object(msutils.edition.Path, 'rglob')
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
-    def test_indd_files_extensions(self, mock_exists):
+    def test_indd_files_extensions(self, mock_exists,
+                                   mock_rglob=None, mock_walk=None):
         """Test Page types for edition_indd_files
+
+        Function should use either Path.rglob or os.walk to recursively
+        find all InDesign files in the edition directory. This is done
+        because supplements are often stored in a subdirectory of the
+        edition, to avoid cluttering the edition listing.
+
+        Both Path.rglob and os.walk are mocked out and it is acceptable
+        to use either.
 
         All the Pages returned by the function should have a .type of 'indd'
         """
         indd_gen = (x for x in self.indd_names)
-        with mock.patch.object(msutils.edition.Path, 'iterdir',
-                               return_value=indd_gen):
-            res = msutils.edition_indd_files(self.no_edition)
-            self.assertEqual({p.type for p in res}, {'indd'})
+
+        # mock_rglob always needs a value because pathlib is always imported
+        mock_rglob.return_value = indd_gen
+        if mock_walk is not None:
+            # os is only imported by edition if walk is needed
+            mock_walk.side_effect = [
+                ['', [], self.indd_list[:8]],
+                ['', [], self.indd_list[8:]]]
+
+        res = msutils.edition_indd_files(self.no_edition)
+        self.assertEqual({p.type for p in res}, {'indd'})
+        self.assertEqual(len(res), len(self.indd_names))
+
+        if mock_walk is not None:
+            mock_walk.assert_called()
+        else:
+            mock_rglob.assert_called()
 
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_pdf_files_extensions(self, mock_exists):

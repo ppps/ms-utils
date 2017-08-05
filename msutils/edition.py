@@ -58,11 +58,21 @@ def _parse_pdfs_dir(path):
     return sorted(_paths_to_pages(all_pdfs))
 
 
+def directory_indd_files(path):
+    """List all the InDesign files in the given directory
+
+    This finds all .indd files in the directory and its subdirectories.
+
+    This is unlike the PDF functions; it is because supplements and
+    inserts are often kept in subdirectories instead of in the root
+    of the edition directory.
+    """
+    return sorted(_paths_to_pages(path.rglob('*.indd')))
+
+
 def edition_indd_files(date):
     """List InDesign Pages for date's edition"""
-    ed = edition_dir(date)
-    all_indd = [p for p in ed.iterdir() if p.suffix == '.indd']
-    return sorted(_paths_to_pages(all_indd))
+    return directory_indd_files(edition_dir(date))
 
 
 def edition_press_pdfs(date):
