@@ -119,7 +119,7 @@ class TestSFTP(unittest.TestCase):
     """
     def setUp(self):
         m = mock.Mock()
-        m.path = '/Mock/Path.file'
+        m.path = Path('/Mock/Path.file')
         m.external_name.return_value = 'Renamed'
         self.mock_pages = [m]
 
@@ -133,17 +133,19 @@ class TestSFTP(unittest.TestCase):
     @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
     def test_SFTP_called_with_args(self, mock_ssh):
         """Connection attempted with passed in arguments"""
+        client = mock_ssh.return_value
         msutils.uploading.send_pages_sftp(
             pages=self.mock_pages,
             **self.call_args)
         mock_ssh.assert_called_once()
-        mock_ssh.connect.assert_called_with(**self.sftp_args)
+        client.connect.assert_called_with(**self.sftp_args)
 
     @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
     def test_SFTP_right_directory(self, mock_ssh):
         """SFTP directory is changed after connection"""
         sftp = mock.Mock(spec=msutils.uploading.paramiko.SFTPClient)
-        mock_ssh.open_sftp.return_value = sftp
+        ssh_client = mock_ssh.return_value
+        ssh_client.open_sftp.return_value.__enter__.return_value = sftp
         msutils.uploading.send_pages_sftp(
             pages=self.mock_pages,
             path=self.path,
@@ -154,7 +156,8 @@ class TestSFTP(unittest.TestCase):
     def test_SFTP_put_no_rename(self, mock_ssh):
         """SFTP puts local files without renaming"""
         sftp = mock.Mock(spec=msutils.uploading.paramiko.SFTPClient)
-        mock_ssh.open_sftp.return_value = sftp
+        ssh_client = mock_ssh.return_value
+        ssh_client.open_sftp.return_value.__enter__.return_value = sftp
         msutils.uploading.send_pages_sftp(
             pages=self.mock_pages,
             path=self.path,
@@ -162,13 +165,14 @@ class TestSFTP(unittest.TestCase):
             **self.call_args)
         sftp.put.assert_called_with(
             self.mock_pages[0].path,
-            str(self.mock_pages[0]))
+            self.mock_pages[0].path.name)
 
     @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
     def test_SFTP_put_renamed(self, mock_ssh):
         """SFTP puts local files and renames them"""
         sftp = mock.Mock(spec=msutils.uploading.paramiko.SFTPClient)
-        mock_ssh.open_sftp.return_value = sftp
+        ssh_client = mock_ssh.return_value
+        ssh_client.open_sftp.return_value.__enter__.return_value = sftp
         msutils.uploading.send_pages_sftp(
             pages=self.mock_pages,
             path=self.path,
