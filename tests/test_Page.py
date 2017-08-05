@@ -417,8 +417,32 @@ class TestPageUsingHypothesis(unittest.TestCase):
             msutils.Page._comparison_keys(page),
             keys)
 
-#    @given(_page_name_with_elements())
-#    def test_
+    @given(_page_name_with_elements())
+    def test_Page_external_name(self, page_tuple):
+        """external_name formats as expected
+
+        For single pages without a prefix:
+            MS_1929_12_31_001.pdf
+        Where that is MS, %Y, %m, %d, page number and file extension.
+
+        For multiple pages without a prefix:
+            MS_1929_12_31_002-003.indd
+
+        For single pages with a prefix:
+            MS_1929_12_31_A_001.pdf
+        Where the prefix comes before the page number.
+
+        For multiple pages with a prefix:
+            MS_1929_12_31_A_002-003.indd
+        """
+        name, (p_date, suffix, prefix, p_nums, _) = page_tuple
+        page = msutils.Page(name)
+
+        nums_str = '-'.join(f'{n:03}' for n in p_nums)
+        formatted = f'MS_{p_date:%Y_%m_%d}_{prefix}_{nums_str}.{suffix}'
+        formatted = formatted.replace('__', '_')
+
+        self.assertEqual(page.external_name(), formatted)
 
 
 if __name__ == '__main__':
