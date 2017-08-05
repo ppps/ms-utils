@@ -1,4 +1,5 @@
 import msutils.uploading
+from pathlib import Path
 import unittest
 import unittest.mock as mock
 
@@ -22,7 +23,7 @@ class TestFTP(unittest.TestCase):
     """
     def setUp(self):
         m = mock.Mock()
-        m.path = '/Mock/Path.file'
+        m.path = Path('/Mock/Path.file')
         m.external_name.return_value = 'Renamed'
         self.mock_pages = [m]
 
@@ -33,51 +34,53 @@ class TestFTP(unittest.TestCase):
 
         self.path = 'sub/dir'
 
+    @mock.patch('builtins.open', autospec=True)
     @mock.patch.object(msutils.uploading.ftplib, 'FTP', autospec=True)
-    def test_FTP_setup(self, mock_FTP):
+    def test_FTP_setup(self, mock_FTP, mock_open):
         """FTP constructor should be called with correct args"""
         msutils.uploading.send_pages_ftp(
                 pages=self.mock_pages,
                 **self.call_args
                 )
-        mock_FTP.assert_called_with(self.ftp_args)
+        mock_FTP.assert_called_with(**self.ftp_args)
 
+    @mock.patch('builtins.open', autospec=True)
     @mock.patch.object(msutils.uploading.ftplib, 'FTP', autospec=True)
-    def test_FTP_right_directory(self, mock_FTP):
+    def test_FTP_right_directory(self, mock_FTP, mock_open):
         """If path is supplied FTP.cwd should be called"""
+        ftp_cm = mock_FTP.return_value.__enter__.return_value
         msutils.uploading.send_pages_ftp(
             pages=self.mock_pages,
             path=self.path,
             **self.call_args
             )
-        mock_FTP.cwd.assert_called_with(self.path)
+        ftp_cm.cwd.assert_called_with(self.path)
 
     @mock.patch('builtins.open', autospec=True)
     @mock.patch.object(msutils.uploading.ftplib, 'FTP', autospec=True)
     def test_FTP_stor_no_rename(self, mock_FTP, mock_open):
         """STOR commands correctly sent to the server, file not renamed"""
-        open_retval = mock.Mock()
-        mock_open.return_value = open_retval
+        ftp_cm = mock_FTP.return_value.__enter__.return_value
+        open_cm = mock_open.return_value.__enter__.return_value
         msutils.uploading.send_pages_ftp(
             pages=self.mock_pages,
             rename=False,
             **self.call_args
             )
 
-        mock_page = self.mock_pages[0]
-        page_str = str(mock_page)
+        mock_path = self.mock_pages[0].path
         mock_open.assert_called_once()
-        mock_open.assert_called_with(mock_page.path, 'b')
-        mock_FTP.storbinary.assert_called_once()
-        mock.FTP.storbinary.assert_called_with(
-                f'STOR { page_str }', open_retval)
+        mock_open.assert_called_with(mock_path, 'rb')
+        ftp_cm.storbinary.assert_called_once()
+        ftp_cm.storbinary.assert_called_with(
+                f'STOR { mock_path.name }', open_cm)
 
     @mock.patch('builtins.open', autospec=True)
     @mock.patch.object(msutils.uploading.ftplib, 'FTP', autospec=True)
     def test_FTP_stor_rename(self, mock_FTP, mock_open):
         """STOR commands correctly sent to the server, file not renamed"""
-        open_retval = mock.Mock()
-        mock_open.return_value = open_retval
+        ftp_cm = mock_FTP.return_value.__enter__.return_value
+        open_cm = mock_open.return_value.__enter__.return_value
         msutils.uploading.send_pages_ftp(
             pages=self.mock_pages,
             rename=True,
@@ -87,10 +90,10 @@ class TestFTP(unittest.TestCase):
         mock_page = self.mock_pages[0]
         page_name = mock_page.external_name()
         mock_open.assert_called_once()
-        mock_open.assert_called_with(mock_page.path, 'b')
-        mock_FTP.storbinary.assert_called_once()
-        mock.FTP.storbinary.assert_called_with(
-                f'STOR { page_name }', open_retval)
+        mock_open.assert_called_with(mock_page.path, 'rb')
+        ftp_cm.storbinary.assert_called_once()
+        ftp_cm.storbinary.assert_called_with(
+                f'STOR { page_name }', open_cm)
 
 
 class TestSFTP(unittest.TestCase):
