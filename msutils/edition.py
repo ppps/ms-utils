@@ -15,7 +15,7 @@ class NoEditionError(Exception):
 
 def edition_dir(date):
     """Return path to date's edition directory
-    
+
     Raises NoEditionError if an edition can't be
     found in the expected locations for date.
     """
@@ -43,7 +43,7 @@ def _edition_web_pdfs_dir(date):
 def _paths_to_pages(paths):
     """Yield Pages from Paths, handling exceptions from non-Pages"""
     for p in paths:
-        try: 
+        try:
             yield Page(p)
         except ValueError:
             continue
@@ -63,7 +63,7 @@ def edition_indd_files(date):
     ed = edition_dir(date)
     all_indd = [p for p in ed.iterdir() if p.suffix == '.indd']
     return sorted(_paths_to_pages(all_indd))
-            
+
 
 def edition_press_pdfs(date):
     """List pre-press PDFs for date's edition"""
@@ -75,4 +75,3 @@ def edition_web_pdfs(date):
     """List low-quality PDFs for date's edition"""
     pdfs_dir = _edition_web_pdfs_dir(date)
     return _parse_pdfs_dir(pdfs_dir)
-

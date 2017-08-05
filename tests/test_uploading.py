@@ -174,4 +174,3 @@ class TestSFTP(unittest.TestCase):
         sftp.put.assert_called_with(
             self.mock_pages[0].path,
             self.mock_pages[0].external_name())
-

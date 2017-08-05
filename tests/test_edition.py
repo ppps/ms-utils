@@ -10,7 +10,6 @@ from datetime import datetime
 import pathlib
 
 
-
 class TestEditionDir(unittest.TestCase):
     """Test the .edition_dir function
 
@@ -97,4 +96,3 @@ class TestEditionFiles(unittest.TestCase):
             res = msutils.edition_press_pdfs(self.no_edition)
             res.extend(msutils.edition_web_pdfs(self.no_edition))
             self.assertEqual({p.type for p in res}, {'pdf'})
-

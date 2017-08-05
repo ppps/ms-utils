@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 from pathlib import Path
 import string
 import unittest
@@ -222,8 +222,14 @@ class TestPageUsingHypothesis(unittest.TestCase):
     @example('W4_Back_240314.indd')      # Allow prefixes
     @given(st.sampled_from(GOOD_NAMES))
     def test_Page_accepts_known_good(self, name):
-        """Page should accept known-good names from a corpus"""
-        page = msutils.Page(page_path=Path(name))
+        """Page should accept known-good names from a corpus
+
+        No assertions here, as Page will raise a ValueError
+        """
+        try:
+            msutils.Page(page_path=Path(name))
+        except ValueError as e:
+            self.fail(e)
 
     @example('10_film29-02-03.indd')
     @example('18_advertisement2_280415.indd')
