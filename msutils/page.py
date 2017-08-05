@@ -27,8 +27,6 @@ class Page(object):
 
     _page_date_format = '%d%m%y'
 
-    _external_template = 'MS_{date:%Y}_{date:%m}_{date:%d}_{page:03}.{type}'
-
     def __init__(self, page_path: Path):
         """Set up Page from a path to a file on disk
 
@@ -108,15 +106,27 @@ class Page(object):
     def external_name(self):
         """Returns string used outside the Star to identify the page
 
-        Raises ValueError if called on instances representing a file
-        representing more than a single page.
+        For single pages without a prefix:
+            MS_1929_12_31_001.pdf
+        Where that is MS, year, month, date, page number and file extension.
+
+        For multiple pages without a prefix:
+            MS_1929_12_31_002-003.indd
+
+        For single pages with a prefix:
+            MS_1929_12_31_A_001.pdf
+        Where the prefix comes before the page number.
+
+        For multiple pages with a prefix:
+            MS_1929_12_31_A_002-003.indd
         """
-        if len(self.pages) > 1:
-            raise ValueError(
-                'external_name is invalid for Page instances that represent'
-                'multiple pages'
-                )
-        return self._external_template.format(
-            date=self.date,
-            page=self.pages[0],
-            type=self.type)
+        if not self.prefix:
+            template = 'MS_{date:%Y_%m_%d}_{nums}.{suffix}'
+        else:
+            template = 'MS_{date:%Y_%m_%d}_{prefix}_{nums}.{suffix}'
+
+        num_str = '-'.join(f'{p:03}' for p in self.pages)
+
+        return template.format(
+            date=self.date, prefix=self.prefix, suffix=self.type,
+            nums=num_str)
