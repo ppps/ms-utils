@@ -207,9 +207,11 @@ class TestSFTP(unittest.TestCase):
         mock_ssh.return_value.connect.side_effect = exceptions
         for exc in exceptions:
             with self.subTest(msg=str(exc)):
-                try:
-                    msutils.uploading.send_pages_sftp(
-                        pages=self.mock_pages,
-                        **self.call_args)
-                except Exception as e:
-                    self.fail(str(e))
+                with self.assertLogs(msutils.uploading.logger, 'ERROR') as cm:
+                    try:
+                        msutils.uploading.send_pages_sftp(
+                            pages=self.mock_pages,
+                            **self.call_args)
+                    except Exception as e:
+                        self.fail(str(e))
+                self.assertGreaterEqual(len(cm.output), 1)
