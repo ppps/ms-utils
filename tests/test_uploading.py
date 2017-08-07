@@ -5,6 +5,7 @@ import unittest.mock as mock
 
 import paramiko
 
+
 class TestFTP(unittest.TestCase):
     """Test the send_pages_ftp function
 
@@ -143,8 +144,8 @@ class TestSFTP(unittest.TestCase):
 
     @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
     def test_SFTP_loads_keys_with_no_password(self, mock_ssh):
-        """Function loads SSH keys from the host when no password is supplied"""
-        client=mock_ssh.return_value
+        """Test loading of SSH keys when no password is supplied"""
+        client = mock_ssh.return_value
         args = self.call_args.copy()
         args['password'] = None
         msutils.uploading.send_pages_sftp(
@@ -200,7 +201,8 @@ class TestSFTP(unittest.TestCase):
         # Before you implement the logging you'll want to test for it here
         exceptions = [
             paramiko.AuthenticationException,
-            paramiko.BadHostKeyException(mock.Mock(), mock.Mock(), mock.Mock()),
+            paramiko.BadHostKeyException(
+                mock.Mock(), mock.Mock(), mock.Mock()),
             paramiko.SSHException]
         mock_ssh.return_value.connect.side_effect = exceptions
         for exc in exceptions:

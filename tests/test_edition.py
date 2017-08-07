@@ -134,7 +134,7 @@ class TestEditionFiles(unittest.TestCase):
     @mock.patch.object(msutils.edition.Path, 'iterdir')
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_directory_pdfs_filter_nonpages(self, mock_exists, mock_iterdir):
-        """directory_pdfs returns expected number of pages from mock directory"""
+        """directory_pdfs returns expected number of pages from directory"""
         mock_iterdir.return_value = [pathlib.Path('A1_TestPage_010217.pdf'),
                                      pathlib.Path('not-a-page.pdf')]
         res = msutils.directory_pdfs(pathlib.Path('dummy-dir'))
