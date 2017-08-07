@@ -3,6 +3,7 @@ from pathlib import Path
 import unittest
 import unittest.mock as mock
 
+import paramiko
 
 class TestFTP(unittest.TestCase):
     """Test the send_pages_ftp function
@@ -192,3 +193,21 @@ class TestSFTP(unittest.TestCase):
         sftp.put.assert_called_with(
             self.mock_pages[0].path,
             self.mock_pages[0].external_name())
+
+    @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
+    def test_SFTP_handle_connection_exceptions(self, mock_ssh):
+        """SFTP should catch exceptions raised when trying to connect"""
+        # Before you implement the logging you'll want to test for it here
+        exceptions = [
+            paramiko.AuthenticationException,
+            paramiko.BadHostKeyException(mock.Mock(), mock.Mock(), mock.Mock()),
+            paramiko.SSHException]
+        mock_ssh.return_value.connect.side_effect = exceptions
+        for exc in exceptions:
+            with self.subTest(msg=str(exc)):
+                try:
+                    msutils.uploading.send_pages_sftp(
+                        pages=self.mock_pages,
+                        **self.call_args)
+                except Exception as e:
+                    self.fail(str(e))
