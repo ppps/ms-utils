@@ -28,22 +28,26 @@ def send_pages_ftp(pages, host, user, password='',
     by calling its external_name method. If rename is False the
     page's current filename will be used.
     """
-    with ftplib.FTP(host=host, user=user, passwd=password) as server:
-        logger.debug('Connected to %s as %s', host, user)
-        if path is not None:
-            server.cwd(path)
-            logger.debug('Changed to directory %s', path)
-        for page in pages:
-            if rename:
-                new_name = page.external_name()
-            else:
-                new_name = page.path.name
-            with open(page.path, 'rb') as page_file:
-                logger.debug('Opened %s for uploading', page.path)
-                server.storbinary(
-                    f'STOR {new_name}',
-                    page_file)
-                logger.info('Uploaded file: %s    ->    %s', page, new_name)
+    try:
+        with ftplib.FTP(host=host, user=user, passwd=password) as server:
+            logger.debug('Connected to %s as %s', host, user)
+            if path is not None:
+                server.cwd(path)
+                logger.debug('Changed to directory %s', path)
+            for page in pages:
+                if rename:
+                    new_name = page.external_name()
+                else:
+                    new_name = page.path.name
+                with open(page.path, 'rb') as page_file:
+                    logger.debug('Opened %s for uploading', page.path)
+                    server.storbinary(
+                        f'STOR {new_name}',
+                        page_file)
+                    logger.info('Uploaded file: %s    ->    %s',
+                                page, new_name)
+    except ftplib.all_errors as e:
+        logger.error('FTP uploading encountered an error: %s', e)
 
 
 def send_pages_sftp(pages, host, user, password=None,

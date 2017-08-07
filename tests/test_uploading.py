@@ -1,9 +1,10 @@
 import msutils.uploading
-from pathlib import Path
 import unittest
 import unittest.mock as mock
 
+import ftplib
 import paramiko
+from pathlib import Path
 
 
 class TestFTP(unittest.TestCase):
@@ -96,6 +97,18 @@ class TestFTP(unittest.TestCase):
         ftp_cm.storbinary.assert_called_once()
         ftp_cm.storbinary.assert_called_with(
                 f'STOR { page_name }', open_cm)
+
+    @mock.patch.object(msutils.uploading.ftplib, 'FTP')
+    def test_FTP_handles_errors(self, mock_FTP):
+        """FTP should handle all ftplib errors and log them"""
+        mock_FTP.side_effect = ftplib.all_errors
+        for exc in ftplib.all_errors:
+            with self.subTest(msg=exc):
+                with self.assertLogs(msutils.uploading.logger, 'ERROR') as cm:
+                    msutils.uploading.send_pages_ftp(
+                        pages=self.mock_pages,
+                        **self.call_args)
+                self.assertGreaterEqual(len(cm.output), 1)
 
 
 class TestSFTP(unittest.TestCase):
