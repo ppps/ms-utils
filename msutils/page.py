@@ -19,7 +19,7 @@ class Page(object):
     [-_ ]*
     (?P<section> \D+? )
     [-_ ]*
-    (?P<date> \d{6} | \d{8} | \d{2}-\d{2}-\d{2,4} )
+    (?P<date> \d{6} | \d{8} | \d{2}-\d{2}-(?:\d{2}|\d{4}) )
     \.
     (?P<type> indd | pdf )
     $
@@ -52,8 +52,6 @@ class Page(object):
             date_format = '%d%m%y'
         elif len(date_match) == 8:
             date_format = '%d%m%Y'
-        else:
-            raise ValueError("Page's date does not have 6 or 8 digits")
 
         self.date = datetime.strptime(date_match, date_format).date()
 
