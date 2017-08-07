@@ -141,6 +141,17 @@ class TestSFTP(unittest.TestCase):
         client.connect.assert_called_with(**self.sftp_args)
 
     @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
+    def test_SFTP_loads_keys_with_no_password(self, mock_ssh):
+        """Function loads SSH keys from the host when no password is supplied"""
+        client=mock_ssh.return_value
+        args = self.call_args.copy()
+        args['password'] = None
+        msutils.uploading.send_pages_sftp(
+            pages=self.mock_pages,
+            **args)
+        client.load_system_host_keys.assert_called()
+
+    @mock.patch.object(msutils.uploading.paramiko, 'SSHClient', autospec=True)
     def test_SFTP_right_directory(self, mock_ssh):
         """SFTP directory is changed after connection"""
         sftp = mock.Mock(spec=msutils.uploading.paramiko.SFTPClient)
