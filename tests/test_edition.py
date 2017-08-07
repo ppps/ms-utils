@@ -120,3 +120,22 @@ class TestEditionFiles(unittest.TestCase):
             res = msutils.edition_press_pdfs(self.no_edition)
             res.extend(msutils.edition_web_pdfs(self.no_edition))
             self.assertEqual({p.type for p in res}, {'pdf'})
+
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=False)
+    def test_directory_pdfs_missing(self, mock_exists):
+        """directory_pdfs returns an empty list if the directory does not exist
+
+        This is acceptable rather than throwing an exception because the PDFs
+        directories (both kinds) for an edition are created on demand when the
+        PDFs themselves are created."""
+        fake_path = pathlib.Path('no-directory-here')
+        self.assertEqual(msutils.directory_pdfs(fake_path), [])
+
+    @mock.patch.object(msutils.edition.Path, 'iterdir')
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
+    def test_directory_pdfs_filter_nonpages(self, mock_exists, mock_iterdir):
+        """directory_pdfs returns expected number of pages from mock directory"""
+        mock_iterdir.return_value = [pathlib.Path('A1_TestPage_010217.pdf'),
+                                     pathlib.Path('not-a-page.pdf')]
+        res = msutils.directory_pdfs(pathlib.Path('dummy-dir'))
+        self.assertEqual(len(res), 1)
