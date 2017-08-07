@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 import string
 import unittest
@@ -31,6 +31,12 @@ for file in filter_txt(bad_names_dir):
     with open(file, encoding='utf-8') as names_file:
         for line in names_file:
             BAD_NAMES.append(line.rstrip())
+
+
+def _make_page_name(prefix, page_nums, section, page_date, suffix):
+    """Return a formatted page name"""
+    num_str = '-'.join(map(str, page_nums))
+    return f'{prefix}{num_str}_{section}{page_date:%d%m%y}.{suffix}'
 
 
 class TestPageNameParsing(unittest.TestCase):
@@ -318,11 +324,7 @@ class TestPageUsingHypothesis(unittest.TestCase):
             max_date=date(2033, 1, 1)))
         suffix = draw(st.sampled_from(['pdf', 'indd']))
 
-        if num_2 is None:
-            page_name = f'{prefix}{num_1}_{section}_{p_date:%d%m%y}.{suffix}'
-        else:
-            page_name = (f'{prefix}{num_1}-{num_2}_'
-                         f'{section}_{p_date:%d%m%y}.{suffix}')
+        page_name = _make_page_name(prefix, p_nums, section, p_date, suffix)
 
         return (Path(page_name),
                 (p_date, suffix, prefix, p_nums,
@@ -389,7 +391,7 @@ class TestPageUsingHypothesis(unittest.TestCase):
 
     @given(_page_name_with_elements(),
            _page_name_with_elements())
-    def test_Page_compare(self, page1_tuple, page2_tuple):
+    def test_Page_compare_lt_gt(self, page1_tuple, page2_tuple):
         """Pages sort according to their comparison keys
 
         In this case, we instantiate two Pages with different paths
@@ -408,6 +410,30 @@ class TestPageUsingHypothesis(unittest.TestCase):
             self.assertLess(page_1, page_2)
         elif p1_list > p2_list:
             self.assertGreater(page_1, page_2)
+
+    @given(_page_name_with_elements())
+    def test_Page_compare_le(self, page_tuple):
+        """Compare pages using <= operator"""
+        page_name, (page_date, suffix, prefix, page_nums, section) = page_tuple
+        page_1 = msutils.Page(page_name)
+        page_2 = msutils.Page(
+            Path(_make_page_name(prefix, page_nums, section,
+                                 page_date + timedelta(1),
+                                 suffix)))
+        self.assertLessEqual(page_1, page_1)
+        self.assertLessEqual(page_1, page_2)
+
+    @given(_page_name_with_elements())
+    def test_Page_compare_ge(self, page_tuple):
+        """Compare pages using >= operator"""
+        page_name, (page_date, suffix, prefix, page_nums, section) = page_tuple
+        page_1 = msutils.Page(page_name)
+        page_2 = msutils.Page(
+            Path(_make_page_name(prefix, page_nums, section,
+                                 page_date + timedelta(1),
+                                 suffix)))
+        self.assertGreaterEqual(page_1, page_1)
+        self.assertGreaterEqual(page_2, page_1)
 
     @given(_page_name_with_elements())
     def test_Page_comparison_keys(self, arg_tuple):

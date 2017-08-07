@@ -99,7 +99,7 @@ class Page(object):
         return (self.__lt__(other) or self.__eq__(other))
 
     def __ge__(self, other):
-        return (self.__ge__(other) or self.__eq__(other))
+        return (self.__gt__(other) or self.__eq__(other))
 
     def external_name(self):
         """Returns string used outside the Star to identify the page
