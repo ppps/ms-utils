@@ -9,3 +9,7 @@ Included are functions for:
 * Uploading InDesign and PDF pages to FTP and SFTP servers
 
 Most of these work with the `Page` class, which parses a filename of an InDesign or PDF and allows easy renaming to an external name, as well as sorting and so on.
+
+## Requirements
+
+* [Paramiko](http://www.paramiko.org) — for SFTP uploading
