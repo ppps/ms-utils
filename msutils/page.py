@@ -25,8 +25,6 @@ class Page(object):
     $
     ''', flags=re.VERBOSE | re.IGNORECASE)
 
-    _page_date_format = '%d%m%y'
-
     def __init__(self, page_path: Path):
         """Set up Page from a path to a file on disk
 
