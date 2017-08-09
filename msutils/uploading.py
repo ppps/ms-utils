@@ -44,7 +44,7 @@ def send_pages_ftp(pages, host, user, password='',
                     server.storbinary(
                         f'STOR {new_name}',
                         page_file)
-                    logger.info('Uploaded file: %s    ->    %s',
+                    logger.info('Uploaded file: %24s  ->  %-24s',
                                 page, new_name)
     except ftplib.all_errors as e:
         logger.error('FTP uploading encountered an error: %s', e)
@@ -114,6 +114,6 @@ def send_pages_sftp(pages, host, user, password=None,
             else:
                 new_name = page.path.name
             server.put(page.path, new_name)
-            logger.info('Uploaded file: %s    ->    %s', page, new_name)
+            logger.info('Uploaded file: %24s  ->  %-24s', page, new_name)
 
     ssh_client.close()
