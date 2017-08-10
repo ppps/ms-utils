@@ -46,7 +46,7 @@ class TestEditionDir(unittest.TestCase):
         self.assertEqual(ed, expected)
 
     @given(st.one_of(
-            st.dates(max_date=date(2002, 1, 1)),
+            st.dates(max_date=date(2001, 12, 31)),
             st.dates(min_date=date(2030, 1, 1))))
     def test_raises(self, dt):
         """edition_dir raises NoEditionError when it can't find the directory
