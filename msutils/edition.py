@@ -1,6 +1,10 @@
+import logging
 from pathlib import Path
 
 from .page import Page
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 PAGES_ROOT = Path('~/Server/Pages/').expanduser()
 CURRENT_EDITION_TEMPLATE = '{0:%Y-%m-%d %A %b %-d}'
@@ -40,6 +44,10 @@ def _fetch_stores():
     present_stores = [(path, ed_template)
                       for (path, ed_template) in EDITION_STORES
                       if path.exists()]
+    logger.debug(
+        'Connected stores:\n    %s',
+        '\n    '.join(str(p) for p, t in present_stores))
+
     if present_stores:
         return present_stores
     else:
@@ -57,6 +65,7 @@ def edition_dir(date):
     for store, path_template in present_stores:
         candidate = store.joinpath(path_template.format(date))
         if candidate.exists():
+            logger.debug('Found edition dir: %s', candidate)
             return candidate
     else:
         raise NoEditionError(f'Cannot find edition for {date:%Y-%m-%d}')
