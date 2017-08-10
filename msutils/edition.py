@@ -6,7 +6,6 @@ from .page import Page
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-PAGES_ROOT = Path('~/Server/Pages/').expanduser()
 CURRENT_EDITION_TEMPLATE = '{0:%Y-%m-%d %A %b %-d}'
 ARCHIVE_EDITION_TEMPLATE = '{0:%Y/%m %B/%Y-%m-%d %A}'
 PRESS_PDFS_TEMPLATE = '{0:PDFs %d%m%y}'
