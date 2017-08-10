@@ -6,26 +6,26 @@ import unittest.mock as mock
 from hypothesis import given
 import hypothesis.strategies as st
 
-from datetime import datetime
+from datetime import date
 import pathlib
 
 
 class TestEditionDir(unittest.TestCase):
     """Test the .edition_dir function
 
-    It should take a datetime and return a pathlib.Path object corresponding to
+    It should take a date and return a pathlib.Path object corresponding to
     the edition for that day.
 
     If there is no such edition it should raise a msutils.NoEditionError.
     """
-    @given(dt=st.datetimes())
+    @given(dt=st.dates())
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_returns_path(self, mock_exists, dt):
         """edition_dir returns a Path object"""
         ed = msutils.edition_dir(dt)
         self.assertIsInstance(ed, pathlib.Path)
 
-    @given(dt=st.datetimes())
+    @given(dt=st.dates())
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_expected_format(self, mock_exists, dt):
         """edition_dir uses expected path format
@@ -38,7 +38,7 @@ class TestEditionDir(unittest.TestCase):
         In this test we stub out exists so that we get the Path
         returned and can check if it matches our expectations.
 
-        Hypothesis is used to generate datetimes
+        Hypothesis is used to generate dates
         """
         ed = msutils.edition_dir(dt)
         expected = pathlib.Path(f'~/Server/Pages/{dt:%Y-%m-%d %A %b %-d}')
@@ -46,8 +46,8 @@ class TestEditionDir(unittest.TestCase):
         self.assertEqual(ed, expected)
 
     @given(st.one_of(
-            st.datetimes(max_datetime=datetime(2002, 1, 1)),
-            st.datetimes(min_datetime=datetime(2030, 1, 1))))
+            st.dates(max_date=date(2002, 1, 1)),
+            st.dates(min_date=date(2030, 1, 1))))
     def test_raises(self, dt):
         """edition_dir raises NoEditionError when it can't find the directory
 
@@ -67,7 +67,7 @@ class TestEditionFiles(unittest.TestCase):
     edition_web_pdfs
     """
     def setUp(self):
-        self.no_edition = datetime(1929, 12, 31)
+        self.no_edition = date(1929, 12, 31)
         names = [f'{i}_Section_311229.' for i in range(1, 17)]
         self.indd_names = [pathlib.Path(n + 'indd') for n in names]
         self.pdf_names = [pathlib.Path(n + 'pdf') for n in names]
