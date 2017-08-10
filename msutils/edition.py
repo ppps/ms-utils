@@ -66,6 +66,8 @@ def edition_dir(date):
         if candidate.exists():
             logger.debug('Found edition dir: %s', candidate)
             return candidate
+        else:
+            logger.debug('Did not find edition: %s', candidate)
     else:
         raise NoEditionError(f'Cannot find edition for {date:%Y-%m-%d}')
 
@@ -75,7 +77,8 @@ def _paths_to_pages(paths):
     for p in paths:
         try:
             yield Page(p)
-        except ValueError:
+        except ValueError as e:
+            logger.debug('Could not parse file as Page: %s', e)
             continue
 
 
