@@ -1,4 +1,5 @@
 import msutils
+import msutils.edition
 
 import unittest
 import unittest.mock as mock
@@ -26,6 +27,8 @@ class TestEditionDir(unittest.TestCase):
          '/Volumes/Server/Pages',
          '/Volumes/Archive-2002-2016',
          '/Volumes/Archive-Since-2017']]
+    archive_stores = [edition_stores[1], edition_stores[2],
+                      edition_stores[4], edition_stores[5]]
 
     @given(dt=st.dates())
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
@@ -40,10 +43,10 @@ class TestEditionDir(unittest.TestCase):
 
         _fetch_stores should return a list of all the edition stores that
         exist on the current machine. If none of them exist it should raise
-        a MissingEditionStoresError.
+        a NoEditionStoresError.
         """
-        with self.assertRaises(msutils.MissingEditionStoresError):
-            msutils._fetch_stores()
+        with self.assertRaises(msutils.NoEditionStoresError):
+            msutils.edition._fetch_stores()
 
     @given(bools=st.lists(elements=st.booleans(), min_size=6, max_size=6))
     @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
@@ -65,8 +68,9 @@ class TestEditionDir(unittest.TestCase):
         paths_exist = dict(zip(self.edition_stores, bools))
         mock_exists.side_effect = lambda path: paths_exist[path]
 
+        # Only test the paths, not the templates _fetch_stores returns
         self.assertEqual(
-            sorted(msutils._fetch_stores()),
+            sorted(p for (p, t) in msutils.edition._fetch_stores()),
             sorted(p for p in paths_exist if paths_exist[p]))
 
     @given(picked_path=st.sampled_from(edition_stores))
@@ -81,13 +85,14 @@ class TestEditionDir(unittest.TestCase):
         Using Hypothesis lets us check that this works for any of the
         edition stores, and not just a single (perhaps hard-coded) one.
         """
-        mock_exists.side_effect = lambda path: path.match(
-            str(picked_path) + '*')
+        def exists_faker(path):
+            return str(path).startswith(str(picked_path))
+        mock_exists.side_effect = exists_faker
         assert msutils.edition_dir(date(2010, 9, 20))
 
-    @given(dt=st.dates())
-    @given(picked_path=st.sampled_from(
-        [edition_stores[0], edition_stores[3]]))
+    @given(
+        dt=st.dates(),
+        picked_path=st.sampled_from([edition_stores[0], edition_stores[3]]))
     @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
     def test_expected_format_for_current(self, mock_exists, picked_path, dt):
         """edition_dir uses expected path format for 'current' editions
@@ -102,16 +107,15 @@ class TestEditionDir(unittest.TestCase):
 
         Hypothesis is used to generate dates
         """
-        mock_exists.side_effect = lambda path: path.match(
-            str(picked_path) + '*')
+        def exists_faker(path):
+            return str(path).startswith(str(picked_path))
+        mock_exists.side_effect = exists_faker
 
         ed = msutils.edition_dir(dt)
-        expected_pattern = f'*/Server/Pages/{dt:%Y-%m-%d %A %b %-d}'
-        assert ed.match(expected_pattern)
+        expected_pattern = f'/Server/Pages/{dt:%Y-%m-%d %A %b %-d}'
+        assert str(ed).endswith(expected_pattern)
 
-    @given(dt=st.dates())
-    @given(picked_path=st.sampled_from(
-        [edition_stores[1:3], edition_stores[4:]]))
+    @given(dt=st.dates(), picked_path=st.sampled_from(archive_stores))
     @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
     def test_expected_format_for_archive(self, mock_exists, picked_path, dt):
         """edition_dir uses expected path format for 'archive' editions
@@ -132,23 +136,31 @@ class TestEditionDir(unittest.TestCase):
 
         Hypothesis is used to generate dates
         """
-        mock_exists.side_effect = lambda path: path.match(
-            str(picked_path) + '*')
+        def exists_faker(path):
+            return str(path).startswith(str(picked_path))
+        mock_exists.side_effect = exists_faker
 
         ed = msutils.edition_dir(dt)
-        expected_pattern = f'*/{dt:%Y}/{dt:%m %B}/{dt:%Y-%m-%d %A}'
-        assert ed.match(expected_pattern)
+        expected_pattern = f'/{dt:%Y}/{dt:%m %B}/{dt:%Y-%m-%d %A}'
+        assert str(ed).endswith(expected_pattern)
 
-    @given(st.one_of(
+    @given(dt=st.one_of(
             st.dates(max_date=date(2001, 12, 31)),
             st.dates(min_date=date(2030, 1, 1))))
-    def test_raises(self, dt):
+    @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
+    def test_raises_no_edition(self, mock_exists, dt):
         """edition_dir raises NoEditionError when it can't find the directory
+
+        Mocking ensures that the edition stores are available, so this
+        tests the raising behaviour when just the edition is missing.
 
         Hypothesis is used to generate a date (< 2002 | > 2029).
 
         (God forbid you're still running these tests in 2030.)
         """
+        def exists_faker(path):
+            return path in self.edition_stores
+        mock_exists.side_effect = exists_faker
         with self.assertRaises(msutils.NoEditionError):
             msutils.edition_dir(dt)
 
