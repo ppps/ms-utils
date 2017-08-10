@@ -3,7 +3,7 @@ import msutils
 import unittest
 import unittest.mock as mock
 
-from hypothesis import given
+from hypothesis import given, assume
 import hypothesis.strategies as st
 
 from datetime import date
@@ -18,6 +18,15 @@ class TestEditionDir(unittest.TestCase):
 
     If there is no such edition it should raise a msutils.NoEditionError.
     """
+    edition_stores = [
+        pathlib.Path(p).expanduser() for p in
+        ['~/Server/Pages',
+         '/Volumes/MS-T4-Archive-2002-2016',
+         '/Volumes/MS-T4-Archive-Since-2017',
+         '/Volumes/Server/Pages',
+         '/Volumes/Archive-2002-2016',
+         '/Volumes/Archive-Since-2017']]
+
     @given(dt=st.dates())
     @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
     def test_returns_path(self, mock_exists, dt):
@@ -25,13 +34,66 @@ class TestEditionDir(unittest.TestCase):
         ed = msutils.edition_dir(dt)
         self.assertIsInstance(ed, pathlib.Path)
 
-    @given(dt=st.dates())
-    @mock.patch.object(msutils.edition.Path, 'exists', return_value=True)
-    def test_expected_format(self, mock_exists, dt):
-        """edition_dir uses expected path format
+    @mock.patch.object(msutils.edition.Path, 'exists', return_value=False)
+    def test_fetch_stores_raises(self, mock_exists):
+        """_fetch_stores raises when none of the edition stores exist
 
-        Edition dirs are found on the server at:
-                ~/Server/Pages/%Y-%m-%d %A %b %-d
+        _fetch_stores should return a list of all the edition stores that
+        exist on the current machine. If none of them exist it should raise
+        a MissingEditionStoresError.
+        """
+        with self.assertRaises(msutils.MissingEditionStoresError):
+            msutils._fetch_stores()
+
+    @given(bools=st.lists(elements=st.booleans(), min_size=6, max_size=6))
+    @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
+    def test_fetch_stores_matching_bools(self, mock_exists, bools):
+        """_fetch_stores returns paths for which mock_exist returns True
+
+        The paths are known quantities:
+            * ~/Server/Pages                        # Local Pages
+            * /Volumes/MS-T4-Archive-2002-2016      # Local old archive
+            * /Volumes/MS-T4-Archive-Since-2017     # Local new archive
+            * /Volumes/Server/Pages                 # Remote Pages
+            * /Volumes/Archive-2002-2016            # Remote old archive
+            * /Volumes/Archive-Since-2017           # Remote new archive
+
+        These are zipped with a list of booleans — those zipped with True
+        should be present in the output list.
+        """
+        assume(any(bools))  # All False would raise an error, tested separately
+        paths_exist = dict(zip(self.edition_stores, bools))
+        mock_exists.side_effect = lambda path: paths_exist[path]
+
+        self.assertEqual(
+            sorted(msutils._fetch_stores()),
+            sorted(p for p in paths_exist if paths_exist[p]))
+
+    @given(picked_path=st.sampled_from(edition_stores))
+    @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
+    def test_edition_dir_tests_all(self, mock_exists, picked_path):
+        """edition_dir should return path when it is found in any store
+
+        Here we mock out exists and return True for one of the six edition
+        stores. We also return True for any directory that is a subdirectory
+        (at any level) of the picked edition store path.
+
+        Using Hypothesis lets us check that this works for any of the
+        edition stores, and not just a single (perhaps hard-coded) one.
+        """
+        mock_exists.side_effect = lambda path: path.match(
+            str(picked_path) + '*')
+        assert msutils.edition_dir(date(2010, 9, 20))
+
+    @given(dt=st.dates())
+    @given(picked_path=st.sampled_from(
+        [edition_stores[0], edition_stores[3]]))
+    @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
+    def test_expected_format_for_current(self, mock_exists, picked_path, dt):
+        """edition_dir uses expected path format for 'current' editions
+
+        Current edition dirs are found at:
+                (~|/Volumes)/Server/Pages/%Y-%m-%d %A %b %-d
         ie:
                 /…/2017-08-02 Wednesday Aug 2
 
@@ -40,10 +102,42 @@ class TestEditionDir(unittest.TestCase):
 
         Hypothesis is used to generate dates
         """
+        mock_exists.side_effect = lambda path: path.match(
+            str(picked_path) + '*')
+
         ed = msutils.edition_dir(dt)
-        expected = pathlib.Path(f'~/Server/Pages/{dt:%Y-%m-%d %A %b %-d}')
-        expected = expected.expanduser()
-        self.assertEqual(ed, expected)
+        expected_pattern = f'*/Server/Pages/{dt:%Y-%m-%d %A %b %-d}'
+        assert ed.match(expected_pattern)
+
+    @given(dt=st.dates())
+    @given(picked_path=st.sampled_from(
+        [edition_stores[1:3], edition_stores[4:]]))
+    @mock.patch.object(msutils.edition.Path, 'exists', autospec=True)
+    def test_expected_format_for_archive(self, mock_exists, picked_path, dt):
+        """edition_dir uses expected path format for 'archive' editions
+
+        Archive edition dirs are found at:
+                ARCHIVE_DIR/%Y/%m %B/%Y-%m-%d %A/
+        ie:
+                ARCHIVE_DIR/2017/08 August/2017-08-02 Wednesday
+
+        Where ARCHIVE_DIR is one of:
+            * /Volumes/MS-T4-Archive-2002-2016',
+            * /Volumes/MS-T4-Archive-Since-2017',
+            * /Volumes/Archive-2002-2016',
+            * /Volumes/Archive-Since-2017']]
+
+        In this test we stub out exists so that we get the Path
+        returned and can check if it matches our expectations.
+
+        Hypothesis is used to generate dates
+        """
+        mock_exists.side_effect = lambda path: path.match(
+            str(picked_path) + '*')
+
+        ed = msutils.edition_dir(dt)
+        expected_pattern = f'*/{dt:%Y}/{dt:%m %B}/{dt:%Y-%m-%d %A}'
+        assert ed.match(expected_pattern)
 
     @given(st.one_of(
             st.dates(max_date=date(2001, 12, 31)),
