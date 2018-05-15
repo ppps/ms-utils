@@ -110,16 +110,16 @@ class Page(object):
             MS_1929_12_31_002-003.indd
 
         For single pages with a prefix:
-            MS_1929_12_31_A_001.pdf
-        Where the prefix comes before the page number.
+            MS_A_1929_12_31_001.pdf
+        Where the prefix comes before the year.
 
         For multiple pages with a prefix:
-            MS_1929_12_31_A_002-003.indd
+            MS_A_1929_12_31_002-003.indd
         """
         if not self.prefix:
             template = 'MS_{date:%Y_%m_%d}_{nums}.{suffix}'
         else:
-            template = 'MS_{date:%Y_%m_%d}_{prefix}_{nums}.{suffix}'
+            template = 'MS_{prefix}_{date:%Y_%m_%d}_{nums}.{suffix}'
 
         num_str = '-'.join(f'{p:03}' for p in self.pages)
 
