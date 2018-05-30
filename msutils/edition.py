@@ -78,7 +78,7 @@ def _paths_to_pages(paths):
         try:
             yield Page(p)
         except ValueError as e:
-            logger.debug('Could not parse file as Page: %s', e)
+            logger.warning('Could not parse file as Page: %s', e)
             continue
 
 
