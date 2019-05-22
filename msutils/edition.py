@@ -16,8 +16,8 @@ EDITION_STORES = [
     (Path('/Volumes/MS-T4-Archive-2002-2016'), ARCHIVE_EDITION_TEMPLATE),
     (Path('/Volumes/MS-T4-Archive-Since-2017'), ARCHIVE_EDITION_TEMPLATE),
     (Path('/Volumes/Server/Pages'), CURRENT_EDITION_TEMPLATE),
-    (Path('/Volumes/Archive-2002-2016'), ARCHIVE_EDITION_TEMPLATE),
-    (Path('/Volumes/Archive-Since-2017'), ARCHIVE_EDITION_TEMPLATE),
+    (Path('/Volumes/Archive 2002-2016'), ARCHIVE_EDITION_TEMPLATE),
+    (Path('/Volumes/Archive since 2017'), ARCHIVE_EDITION_TEMPLATE),
     ]
 
 
