@@ -1,5 +1,5 @@
-coverage==4.4.1
-hypothesis==3.17.0
-paramiko==2.2.1
-pytest==3.2.0
-pytest-cov==2.5.1
+coverage<4.5
+hypothesis<3.18
+paramiko<2.3
+pytest<3.3
+pytest-cov<2.6
