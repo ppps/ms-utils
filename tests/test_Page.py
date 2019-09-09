@@ -455,17 +455,17 @@ class TestPageUsingHypothesis(unittest.TestCase):
             MS_1929_12_31_002-003.indd
 
         For single pages with a prefix:
-            MS_1929_12_31_A_001.pdf
+            MS_A_1929_12_31_001.pdf
         Where the prefix comes before the page number.
 
         For multiple pages with a prefix:
-            MS_1929_12_31_A_002-003.indd
+            MS_A_1929_12_31_002-003.indd
         """
         name, (p_date, suffix, prefix, p_nums, _) = page_tuple
         page = msutils.Page(name)
 
         nums_str = '-'.join(f'{n:03}' for n in p_nums)
-        formatted = f'MS_{p_date:%Y_%m_%d}_{prefix}_{nums_str}.{suffix}'
+        formatted = f'MS_{prefix}_{p_date:%Y_%m_%d}_{nums_str}.{suffix}'
         formatted = formatted.replace('__', '_')
 
         self.assertEqual(page.external_name(), formatted)
