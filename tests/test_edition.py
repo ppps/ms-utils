@@ -7,7 +7,7 @@ import unittest.mock as mock
 from hypothesis import given, assume
 import hypothesis.strategies as st
 
-from datetime import date, timedelta
+from datetime import date
 import pathlib
 
 
