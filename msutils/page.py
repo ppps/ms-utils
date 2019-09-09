@@ -57,6 +57,11 @@ class Page(object):
         self.section = regex_match['section']
         self.type = regex_match['type'].lower()
 
+    def __hash__(self):
+        return hash(
+            (self.path, self.pages, self.date, self.prefix, self.section, self.type)
+        )
+
     def __str__(self):
         """Return the name of the underlying file"""
         return self.path.name
