@@ -9,7 +9,7 @@ class Page(object):
     Can be used for both InDesign (.indd) and PDF files.
     """
 
-    _page_name_regex = re.compile('''\
+    _page_name_regex = re.compile(r'''
     ^
     (?P<prefix> [A-Z]{0,1} )
     (?P<first_page>  \d+)
