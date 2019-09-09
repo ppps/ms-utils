@@ -173,8 +173,8 @@ class TestEditionFiles(unittest.TestCase):
     edition_web_pdfs
     """
     def setUp(self):
-        self.no_edition = date(1929, 12, 31)
-        names = [f'{i}_Section_311229.' for i in range(1, 17)]
+        self.no_edition = date(2000, 1, 2)
+        names = [f'{i}_Section_020100.' for i in range(1, 17)]
         self.indd_names = [pathlib.Path(n + 'indd') for n in names]
         self.pdf_names = [pathlib.Path(n + 'pdf') for n in names]
 
