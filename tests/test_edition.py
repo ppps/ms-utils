@@ -7,7 +7,7 @@ import unittest.mock as mock
 from hypothesis import given, assume
 import hypothesis.strategies as st
 
-from datetime import date
+from datetime import date, timedelta
 import pathlib
 
 
@@ -245,3 +245,22 @@ class TestEditionFiles(unittest.TestCase):
                                      pathlib.Path('not-a-page.pdf')]
         res = msutils.directory_pdfs(pathlib.Path('dummy-dir'))
         self.assertEqual(len(res), 1)
+
+    def test_filter_pages_for_date_all_same(self):
+        """No pages filtered if date is what is expected."""
+        pages = [msutils.Page(path) for path in self.pdf_names]
+        self.assertEqual(
+            pages,
+            msutils.edition._filter_pages_for_date(pages, date=self.no_edition)
+        )
+
+    def test_filter_pages_for_date_filters_mixed_dates(self):
+        """Only pages with matching date are returned"""
+        same_date_pages = [msutils.Page(path) for path in self.pdf_names]
+        mixed_date_pages = same_date_pages + [
+            msutils.Page(pathlib.Path(f'1_Front_3107{year}.pdf')) for year in range(50, 60)
+        ]
+        self.assertEqual(
+            same_date_pages,
+            msutils.edition._filter_pages_for_date(mixed_date_pages, date=self.no_edition)
+        )

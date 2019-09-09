@@ -94,9 +94,38 @@ def directory_indd_files(path):
     return sorted(_paths_to_pages(path.rglob('*.indd')))
 
 
+def _filter_pages_for_date(pages, date):
+    """Remove pages with a different date to that given.
+
+    If more than one date is present in the set of pages,
+    then log a warning to alert the user of the library
+    that the filtering has taken place as they may be
+    missing pages 'expectedly' if the date difference
+    is subtle or not otherwise notice.
+    """
+    dates_present = {page.date for page in pages}
+    if len(dates_present) == 1:
+        # Everything's fine, so return
+        return pages
+
+    unexpected_pages = {p for p in pages if p.date != date}
+    logger.warning(
+        "Found pages with dates different to expected (%s): %s",
+        date,
+        sorted(unexpected_pages)
+    )
+    expected_pages = sorted(set(pages) - unexpected_pages)
+    logger.warning(
+        "Only returning pages that match given date: %s",
+        expected_pages
+    )
+    return expected_pages
+
+
 def edition_indd_files(date):
     """List InDesign Pages for date's edition"""
-    return directory_indd_files(edition_dir(date))
+    all_files = directory_indd_files(edition_dir(date))
+    return _filter_pages_for_date(all_files, date)
 
 
 def directory_pdfs(path):
@@ -114,13 +143,17 @@ def _edition_subdirectory(date, subdir_template):
     return ed_dir.joinpath(subdir_template.format(date))
 
 
+def _fetch_pdfs_for_directory_template(date, template):
+    pdfs_dir = _edition_subdirectory(date, template)
+    all_pdfs = directory_pdfs(pdfs_dir)
+    return _filter_pages_for_date(all_pdfs, date)
+
+
 def edition_press_pdfs(date):
     """List pre-press PDFs for date's edition"""
-    pdfs_dir = _edition_subdirectory(date, PRESS_PDFS_TEMPLATE)
-    return directory_pdfs(pdfs_dir)
+    return _fetch_pdfs_for_directory_template(date, PRESS_PDFS_TEMPLATE)
 
 
 def edition_web_pdfs(date):
     """List low-quality PDFs for date's edition"""
-    pdfs_dir = _edition_subdirectory(date, WEB_PDFS_TEMPLATE)
-    return directory_pdfs(pdfs_dir)
+    return _fetch_pdfs_for_directory_template(date, WEB_PDFS_TEMPLATE)
