@@ -25,8 +25,8 @@ class TestEditionDir(unittest.TestCase):
          '/Volumes/MS-T4-Archive-2002-2016',
          '/Volumes/MS-T4-Archive-Since-2017',
          '/Volumes/Server/Pages',
-         '/Volumes/Archive-2002-2016',
-         '/Volumes/Archive-Since-2017']]
+         '/Volumes/Archive 2002-2016',
+         '/Volumes/Archive since 2017']]
     archive_stores = [edition_stores[1], edition_stores[2],
                       edition_stores[4], edition_stores[5]]
 
